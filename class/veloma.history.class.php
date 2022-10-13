@@ -214,6 +214,60 @@ class VelomaHistory extends CommonObject
 		$this->db = $db;
 	}
 
+    /**
+     *  Load last stand for bike
+     *
+     * @param $fk_bike
+     * @return    int              <0 if KO, >0 if OK
+     */
+    public function getLastStandForBike($fk_bike)
+    {
+        $sql = 'SELECT e.fk_stand';
+        $sql .= ' FROM '.MAIN_DB_PREFIX.'veloma_history as e';
+        $sql .= ' WHERE e.fk_stand > 0 AND e.fk_bike = '.(int)$fk_bike;
+        $sql .= ' ORDER BY e.rowid DESC';
+        $sql .= ' LIMIT 1';
+        $result = $this->db->query($sql);
+        if ($result) {
+            $objp = $this->db->fetch_object($result);
+            if ($objp) {
+                return $objp->fk_stand;
+            } else {
+                return 0;
+            }
+        } else {
+            $this->error = $this->db->lasterror();
+            return -1;
+        }
+    }
+
+    /**
+     *  Load last stand for bike
+     *
+     * @param $fk_bike
+     * @return    int              <0 if KO, >0 if OK
+     */
+    public function getLastUserForBike($fk_bike)
+    {
+        $sql = 'SELECT e.fk_user';
+        $sql .= ' FROM '.MAIN_DB_PREFIX.'veloma_history as e';
+        $sql .= ' WHERE e.fk_user > 0 AND e.fk_bike = '.(int)$fk_bike;
+        $sql .= ' ORDER BY e.rowid DESC';
+        $sql .= ' LIMIT 1';
+        $result = $this->db->query($sql);
+        if ($result) {
+            $objp = $this->db->fetch_object($result);
+            if ($objp) {
+                return $objp->fk_user;
+            } else {
+                return 0;
+            }
+        } else {
+            $this->error = $this->db->lasterror();
+            return -1;
+        }
+    }
+
 	/**
 	 *	Insert veloma into database
 	 *
