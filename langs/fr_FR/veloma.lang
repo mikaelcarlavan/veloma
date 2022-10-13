@@ -50,3 +50,50 @@ ChangeLogVersion = Version
 ChangeLogDate = Date
 ChangeLogUpdates = Modification apportées
 VelomaFirstVersion = Première version
+
+#
+VelomaBikes = Vélos
+VelomaHistory = Historique
+VelomaBike = Vélo
+VelomaStand = Station
+VelomaUser = Utilisateur
+VelomaAction = Action
+VelomaParameters = Paramètres
+
+# Commandes
+VelomaListCommands = Aide :
+VelomaHelpCommand = HELP : Service d'aide
+VelomaFreeCommand = FREE : Liste des vélos libres
+VelomaRentCommand = RENT X : Louer le vélo X
+VelomaReturnCommand = RETURN X Y : Retourne le vélo X à la station Y
+VelomaWhereCommand = WHERE X : Recherche le vélo X
+VelomaWhoCommand = WHO X : Utilisateur du vélo X
+VelomaInfoCommand = INFO X : Information sur la station X
+VelomaListCommand = LIST X : Liste les vélos de la station X
+VelomaAddCommand = ADD EMAIL NOM : Enregistre l'utilisateur avec NOM et EMAIL
+
+VelomaNoFreeBikes = Aucun vélo libre.
+VelomaBikeNotFound = Le vélo n'a pas été trouvé.
+VelomaFreeBikes = Vélos libres : %s.
+VelomaBikeIsNotFree = Le vélo n'est pas libre.
+VelomaBikeRented = Confirmation de location du vélo. Le code antivol est %s.
+VelomaBikeReturned = Confirmation de retour du vélo.
+VelomaBikeIsNotRentedByYou = Vous n'êtes pas le loueur de ce vélo.
+VelomaBikeIsNotRented = Le vélo n'est pas en cours de location.
+VelomaBikeCommandNotAllowed = Vous ne disposez pas des droits pour exécuter cette commande.
+VelomaBikeNotRented = Le vélo n'est pas en cours de location.
+VelomaBikeUserNotFound = L'utilisateur de ce vélo n'a pas été trouvé.
+VelomaBikeStandNotFound = La station de ce vélo n'a pas été trouvée.
+VelomaStandNotFound = La station n'a pas été trouvée.
+VelomaBikeIsRentedBy = Le vélo est loué par %s.
+VelomaBikeIsLocatedAt = Le vélo se situe à la station %s située aux coordonnées GPS %s, %s.
+VelomaStandInfo = Information sur la station %s, %s, située aux coordonnées GPS %s, %s.
+VelomaBikeNoteIsEmpty = La note est vide.
+VelomaBikeNoteAdded = La note a été ajoutée au vélo.
+VelomaBiketagIsEmpty = La dégradation est vide.
+VelomaBikeTagAdded = La dégradation a été ajoutée au vélo.
+VelomaBikesInStand = Vélos de la station : %s.
+VelomaNoBikesInStand = Aucun vélo dans la station.
+VelomaBikeRentCanceled = La location a été annulée.
+VelomaUserAdded = L'utilisateur a été ajouté.
+VelomaUserAlreadyExist = Un utilisateur est déjà enregistré avec cet email.

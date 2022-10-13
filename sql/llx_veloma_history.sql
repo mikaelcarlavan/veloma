@@ -16,7 +16,7 @@
 --
 -- ============================================================================
 
--- DROP TABLE `llx_veloma_history`;
+DROP TABLE `llx_veloma_history`;
 
 CREATE TABLE IF NOT EXISTS `llx_veloma_history`
 (
@@ -25,7 +25,8 @@ CREATE TABLE IF NOT EXISTS `llx_veloma_history`
     `fk_stand`        int(11) DEFAULT 0,
     `fk_user`        int(11) DEFAULT 0,
     `action`     varchar(255) NULL,
-    `parameter`     varchar(255) NULL,
+    `parameters`     text NULL,
+    `user_author_id` int(11) DEFAULT 0,
     `datec`          datetime     NULL,
     `entity`         int(11) DEFAULT 0,
     `tms`            timestamp    NOT NULL,

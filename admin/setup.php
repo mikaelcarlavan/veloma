@@ -92,7 +92,7 @@ dol_fiche_head(
 	'settings',
 	$langs->trans("ModuleVelomaName"),
 	0,
-	"veloma@veloma"
+	"veloma2@veloma"
 );
 
 $form = new Form($db);

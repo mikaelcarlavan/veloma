@@ -77,14 +77,14 @@ class modVeloma extends DolibarrModules
 		// Name of image file used for this module.
 		// If file is in theme/yourtheme/img directory under name object_pictovalue.png, use this->picto='pictovalue'
 		// If file is in module/img directory under name object_pictovalue.png, use this->picto='pictovalue@module'
-		$this->picto='veloma@veloma';
+		$this->picto='veloma2@veloma';
 
 		// Defined all module parts (triggers, login, substitutions, menus, css, etc...)
 		// for default path (eg: /veloma/core/xxxxx) (0=disable, 1=enable)
 		// for specific path of parts (eg: /veloma/core/modules/barcode)
 		// for specific css file (eg: /veloma/css/veloma.css.php)
 		$this->module_parts = array(
-            'triggers' => 0,                                 	// Set this to 1 if module has its own trigger directory (core/triggers)
+            'triggers' => 1,                                 	// Set this to 1 if module has its own trigger directory (core/triggers)
             'login' => 0,                                    	// Set this to 1 if module has its own login method directory (core/login)
             'substitutions' => 0,                            	// Set this to 1 if module has its own substitution function file (core/substitutions)
             'menus' => 0,                                    	// Set this to 1 if module has its own menus handler directory (core/menus)
@@ -141,10 +141,46 @@ class modVeloma extends DolibarrModules
 		$this->rights = array();		// Permission array used by this module
 		$r = 0;
 
+        $this->rights[$r][0] = 5000601;
+        $this->rights[$r][1] = 'Voir l\'historique';
+        $this->rights[$r][2] = 'w';
+        $this->rights[$r][3] = 0;
+        $this->rights[$r][4] = 'lire';
+        $this->rights[$r][5] = '';
+
 		// Main menu entries
 		$this->menu = array();
 		$r = 0;
 
+        $this->menu[$r]=array('fk_menu'=>0,			                // Put 0 if this is a top menu
+            'type'=>'top',			                // This is a Top menu entry
+            'titre'=>$langs->trans('VelomaBikes'),
+            'mainmenu'=>'veloma',
+            'leftmenu'=>'',
+            'url'=>'/veloma/list.php',
+            'langs'=> 'veloma@veloma',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+            'position'=> 30,
+            'enabled'=>'$conf->veloma->enabled ', //&& (!(! empty($conf->comptabilite->enabled) || ! empty($conf->accounting->enabled) || ! empty($conf->facture->enabled) || ! empty($conf->deplacement->enabled) || ! empty($conf->don->enabled) || ! empty($conf->tax->enabled)))
+            'perms'=>'$user->rights->veloma->lire',			                // Use 'perms'=>'$user->rights->report->level1->level2' if you want your menu with a permission rules
+            'target'=>'',
+            'user'=>2
+        );
+
+        $r++;
+        $this->menu[$r]=array(
+            'fk_menu'=>'fk_mainmenu=veloma',			// Put 0 if this is a top menu
+            'type'=> 'left',			// This is a Top menu entry
+            'titre'=> $langs->trans('VelomaHistory'),
+            'mainmenu'=> 'veloma',
+            'leftmenu'=> 'history',		// Use 1 if you also want to add left menu entries using this descriptor. Use 0 if left menu entries are defined in a file pre.inc.php (old school).
+            'url'=> '/veloma/list.php',
+            'langs'=> 'veloma@veloma',	// Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+            'position'=> 101,
+            'enabled'=> '1',			// Define condition to show or hide menu entry. Use '$conf->mymodule->enabled' if entry must be visible if module is enabled.
+            'perms'=> '$user->rights->veloma->lire',			// Use 'perms'=>'$user->rights->mymodule->level1->level2' if you want your menu with a permission rules
+            'target'=> '',
+            'user'=> 2
+        );
 	}
 
 	/**

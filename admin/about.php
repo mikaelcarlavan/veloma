@@ -67,7 +67,7 @@ dol_fiche_head(
 	'about',
 	$langs->trans("ModuleVelomaName"),
 	0,
-	'veloma@veloma'
+	'veloma2@veloma'
 );
 
 // About page goes here
