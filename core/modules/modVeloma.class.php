@@ -201,6 +201,8 @@ class modVeloma extends DolibarrModules
 		include_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
 		$extrafields = new ExtraFields($this->db);
 
+        $result = $extrafields->addExtraField('veloma_credit', "VelomaCurrentCredit", 'varchar', 100, 255, 'user', 0, 0, '0', '', 0, '', 1, '', '', '', 'veloma@veloma', '$conf->global->VELOMA_USE_CREDIT');
+        $result = $extrafields->addExtraField('veloma_limit', "VelomaRentLimit", 'int', 101, 10, 'user', 0, 0, 1, '', 0, '', 1, '', '', '', 'veloma@veloma', '$conf->global->VELOMA_USE_CREDIT');
 
         return $this->_init($sql, $options);
 	}
