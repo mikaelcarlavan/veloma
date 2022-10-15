@@ -242,7 +242,7 @@ class VelomaHistory extends CommonObject
     }
 
     /**
-     *  Load last stand for bike
+     *  Load last user for bike
      *
      * @param $fk_bike
      * @return    int              <0 if KO, >0 if OK
@@ -259,6 +259,52 @@ class VelomaHistory extends CommonObject
             $objp = $this->db->fetch_object($result);
             if ($objp) {
                 return $objp->fk_user;
+            } else {
+                return 0;
+            }
+        } else {
+            $this->error = $this->db->lasterror();
+            return -1;
+        }
+    }
+
+    /**
+     *  Get number of current rents for user
+     *
+     * @param $fk_user
+     * @param $action
+     * @return    int              <0 if KO, >0 if OK
+     */
+    function getTotalRentsForUser($fk_user, $action)
+    {
+        //TODO
+
+        return 0;
+    }
+
+    /**
+     *  Load rent for bike and user
+     *
+     * @param $fk_bike
+     * @return    int              <0 if KO, >0 if OK
+     */
+    public function getLastActionForBikeAndUser($fk_user, $fk_bike, $action)
+    {
+        $sql = "SELECT e.*";
+        $sql .= " FROM ".MAIN_DB_PREFIX."veloma_history as e";
+        $sql .= " WHERE e.fk_user = ".(int)$fk_user;
+        $sql .= " AND e.fk_bike = ".(int)$fk_bike;
+        $sql .= " AND e.action = '".$this->db->escape($action)."'";
+        $sql .= " ORDER BY e.rowid DESC";
+        $sql .= " LIMIT 1";
+
+        $result = $this->db->query($sql);
+        if ($result) {
+            $objp = $this->db->fetch_object($result);
+            if ($objp) {
+                $history = new VelomaHistory($this->db);
+                $history->fetch($objp->rowid);
+                return $history;
             } else {
                 return 0;
             }
