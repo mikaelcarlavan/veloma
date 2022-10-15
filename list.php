@@ -15,6 +15,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+
 /**
  *  \file       htdocs/veloma/list.php
  *  \ingroup    veloma
@@ -32,10 +33,14 @@ dol_include_once("/veloma/class/veloma.class.php");
 dol_include_once("/veloma/class/veloma.history.class.php");
 
 if (!empty($conf->stand->enabled)) {
+    dol_include_once("/stand/class/html.form.stand.class.php");
+    dol_include_once("/stand/class/stand.class.php");
     $langs->load("stand@stand");
 }
 
 if (!empty($conf->bike->enabled)) {
+    dol_include_once("/bike/class/html.form.bike.class.php");
+    dol_include_once("/bike/class/bike.class.php");
     $langs->load("bike@bike");
 }
 
@@ -51,7 +56,16 @@ $optioncss = GETPOST('optioncss', 'alpha');
 $search_btn = GETPOST('button_search', 'alpha');
 $search_remove_btn = GETPOST('button_removefilter', 'alpha');
 
+$search_cyear = GETPOST("search_cyear", "int");
+$search_cmonth = GETPOST("search_cmonth", "int");
+$search_cday = GETPOST("search_cday", "int");
+
+
 $search_user_author_id = GETPOST('search_user_author_id', 'int');
+$search_action = GETPOST('search_action');
+$search_fk_stand = GETPOST('search_fk_stand', 'int');
+$search_fk_bike = GETPOST('search_fk_bike', 'int');
+$search_fk_user = GETPOST('search_fk_user', 'int');
 
 // Security check
 $id = GETPOST('id', 'int');
@@ -115,6 +129,7 @@ if (empty($reshook)) {
 
 $now = dol_now();
 $form = new Form($db);
+$formother = new FormOther($db);
 
 $title = $langs->trans("VelomaHistory");
 $help_url = "";
@@ -133,6 +148,26 @@ $sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'bike as b ON e.fk_bike = b.rowid';
 $sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'stand as s ON e.fk_stand = s.rowid';
 $sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'user as u ON e.fk_user = u.rowid';
 $sql .= ' WHERE e.entity IN (' . getEntity('veloma') . ')';
+
+if ($search_action) $sql .= natural_search('e.action', $search_action);
+
+if ($search_cmonth > 0) {
+    if ($search_cyear > 0 && empty($search_cday))
+        $sql .= " AND e.datec BETWEEN '" . $db->idate(dol_get_first_day($search_cyear, $search_cmonth, false)) . "' AND '" . $db->idate(dol_get_last_day($search_cyear, $search_cmonth, false)) . "'";
+    else if ($search_cyear > 0 && !empty($search_cday))
+        $sql .= " AND e.datec BETWEEN '" . $db->idate(dol_mktime(0, 0, 0, $search_cmonth, $search_cday, $search_cyear)) . "' AND '" . $db->idate(dol_mktime(23, 59, 59, $search_cmonth, $search_cday, $search_cyear)) . "'";
+    else
+        $sql .= " AND date_format(e.datec, '%m') = '" . $search_cmonth . "'";
+} else if ($search_cyear > 0) {
+    $sql .= " AND e.datec BETWEEN '" . $db->idate(dol_get_first_day($search_cyear, 1, false)) . "' AND '" . $db->idate(dol_get_last_day($search_cyear, 12, false)) . "'";
+}
+
+if ($search_fk_bike > 0) $sql .= " AND e.fk_bike = " . $search_fk_bike;
+if ($search_fk_stand > 0) $sql .= " AND e.fk_stand = " . $search_fk_stand;
+if ($search_fk_user > 0) $sql .= " AND e.fk_user = " . $search_fk_user;
+
+if ($search_user_author_id > 0) $sql .= " AND e.user_author_id = " . $search_user_author_id;
+
 
 // Add where from hooks
 $parameters = array();
@@ -172,6 +207,18 @@ if ($resql) {
     if ($optioncss != '') $param .= '&optioncss=' . urlencode($optioncss);
 
 
+    // Lines of title fields
+    print '<form method="POST" id="searchFormList" action="' . $_SERVER["PHP_SELF"] . '">';
+    if ($optioncss != '') print '<input type="hidden" name="optioncss" value="' . $optioncss . '">';
+    print '<input type="hidden" name="token" value="' . $_SESSION['newtoken'] . '">';
+    print '<input type="hidden" name="formfilteraction" id="formfilteraction" value="list">';
+    print '<input type="hidden" name="action" value="list">';
+    print '<input type="hidden" name="sortfield" value="' . $sortfield . '">';
+    print '<input type="hidden" name="sortorder" value="' . $sortorder . '">';
+    print '<input type="hidden" name="page" value="' . $page . '">';
+    print '<input type="hidden" name="contextpage" value="' . $contextpage . '">';
+
+
     print_barre_liste($title, $page, $_SERVER["PHP_SELF"], $param, $sortfield, $sortorder, '', $num, $nbtotalofrecords, 'veloma2@veloma', 0, '', '', $limit);
 
     $moreforfilter = '';
@@ -200,6 +247,71 @@ if ($resql) {
     print '<div class="div-table-responsive">';
     print '<table class="tagtable liste' . ($moreforfilter ? " listwithfilterbefore" : "") . '">' . "\n";
 
+    print '<tr class="liste_titre_filter">';
+
+    // Ref
+    if (!empty($arrayfields['e.action']['checked'])) {
+        print '<td class="liste_titre">';
+        print '<input class="flat" size="6" type="text" name="search_action" value="' . $search_action . '">';
+        print '</td>';
+    }
+
+    if (!empty($arrayfields['e.parameters']['checked'])) {
+        print '<td class="liste_titre">';
+        print '&nbsp;';
+        print '</td>';
+    }
+
+    if (!empty($arrayfields['e.fk_bike']['checked']) && !empty($conf->bike->enabled)) {
+        $bikeform = new BikeForm($db);
+        print '<td class="liste_titre">';
+        print $bikeform->select_bike($search_fk_bike, 'search_fk_bike', '', 1);
+        print '</td>';
+    }
+
+    if (!empty($arrayfields['e.fk_stand']['checked']) && !empty($conf->stand->enabled)) {
+        $standform = new StandForm($db);
+        print '<td class="liste_titre">';
+        print $standform->select_stand($search_fk_stand, 'search_fk_stand', '', 1);
+        print '</td>';
+    }
+
+    if (!empty($arrayfields['e.fk_user']['checked'])) {
+        print '<td class="liste_titre">';
+        print $form->select_dolusers($search_fk_user,  'search_fk_user', 1);
+        print '</td>';
+    }
+
+    // Extra fields
+    include DOL_DOCUMENT_ROOT . '/core/tpl/extrafields_list_search_input.tpl.php';
+    // Fields from hook
+    $parameters = array('arrayfields' => $arrayfields);
+    $reshook = $hookmanager->executeHooks('printFieldListOption', $parameters);    // Note that $action and $object may have been modified by hook
+    print $hookmanager->resPrint;
+
+    // Date de saisie
+    if (!empty($arrayfields['e.datec']['checked'])) {
+        print '<td class="liste_titre nowraponall" align="left">';
+        if (!empty($conf->global->MAIN_LIST_FILTER_ON_DAY)) print '<input class="flat width25 valignmiddle" type="text" maxlength="2" name="search_cday" value="' . $search_cday . '">';
+        print '<input class="flat width25 valignmiddle" type="text" maxlength="2" name="search_cmonth" value="' . $search_cmonth . '">';
+        $formother->select_year($search_cyear ? $search_cyear : -1, 'search_cyear', 1, 20, 5);
+        print '</td>';
+    }
+
+    // Date modification
+    if (!empty($arrayfields['e.tms']['checked'])) {
+        print '<td class="liste_titre">';
+        print '</td>';
+    }
+
+    // Action column
+    print '<td class="liste_titre" align="middle">';
+    $searchpicto = $form->showFilterButtons();
+    print $searchpicto;
+    print '</td>';
+
+    print "</tr>\n";
+
     // Fields title
     print '<tr class="liste_titre">';
     if (!empty($arrayfields['e.action']['checked'])) print_liste_field_titre($arrayfields['e.action']['label'], $_SERVER["PHP_SELF"], 'e.action', '', $param, '', $sortfield, $sortorder);
@@ -209,6 +321,9 @@ if ($resql) {
     if (!empty($arrayfields['e.fk_user']['checked'])) print_liste_field_titre($arrayfields['e.fk_user']['label'], $_SERVER["PHP_SELF"], 'e.fk_user', '', $param, '', $sortfield, $sortorder, '');
     if (!empty($arrayfields['e.datec']['checked'])) print_liste_field_titre($arrayfields['e.datec']['label'], $_SERVER["PHP_SELF"], 'e.datec', '', $param, '', $sortfield, $sortorder);
     if (!empty($arrayfields['e.tms']['checked'])) print_liste_field_titre($arrayfields['e.tms']['label'], $_SERVER["PHP_SELF"], "e.tms", "", $param, 'align="left" class="nowrap"', $sortfield, $sortorder);
+
+    print_liste_field_titre('', $_SERVER["PHP_SELF"], "", '', $param, 'align="center"', $sortfield, $sortorder, 'maxwidthsearch ');
+
     print '</tr>' . "\n";
 
     $generic_user = new User($db);
@@ -276,7 +391,7 @@ if ($resql) {
         //
         if (!empty($arrayfields['e.datec']['checked'])) {
             print '<td align="left">';
-            print dol_print_date($db->jdate($obj->datec), 'day');
+            print dol_print_date($db->jdate($obj->datec), 'dayhour');
             print '</td>';
             if (!$i) $totalarray['nbfield']++;
         }
@@ -288,6 +403,12 @@ if ($resql) {
             print '</td>';
             if (!$i) $totalarray['nbfield']++;
         }
+
+        // Action column
+        print '<td class="nowrap" align="center">';
+        print '&nbsp;';
+        print '</td>';
+        if (!$i) $totalarray['nbfield']++;
 
         print "</tr>\n";
 
