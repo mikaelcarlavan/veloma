@@ -32,10 +32,16 @@ VelomaOptions = Options
 Description = Description
 Value = Valeur
 Action = Action
+VelomaCurrentCredit = Crédit actuel
+VelomaRentLimit = Limite de location
 DescVELOMA_MAP_LATITUDE = Centre de la carte (latitude)
 DescVELOMA_MAP_LONGITUDE = Centre de la carte (longitude)
 DescVELOMA_MAP_ZOOM = Zoom initial de la carte
-
+DescVELOMA_USE_CREDIT = Utilisation du système de crédit
+DescVELOMA_RENT_COST = Nombre de crédits consommés pour une période de temps
+DescVELOMA_RENT_DURATION = Nombre de minutes d'une période de temps
+DescVELOMA_FREE_DURATION = Nombre de minutes d'une course avant activation du crédit
+DescVELOMA_ALLOW_UNREGISTERED_USERS = Autoriser les utilisateurs non enregistrés
 #
 # Page À propos
 #
@@ -70,14 +76,18 @@ VelomaWhereCommand = WHERE X : Recherche le vélo X
 VelomaWhoCommand = WHO X : Utilisateur du vélo X
 VelomaInfoCommand = INFO X : Information sur la station X
 VelomaListCommand = LIST X : Liste les vélos de la station X
-VelomaAddCommand = ADD EMAIL NOM : Enregistre l'utilisateur avec NOM et EMAIL
+VelomaAddCommand = ADD PRENOM NOM EMAIL CREDIT : Enregistre l'utilisateur avec PRENOM/NOM et EMAIL et définit son CREDIT initial.
 
+VelomaNotRegistered = Votre compte n'a pas été trouvé. Merci de nous contacter pour être inscris sur la plateforme.
 VelomaNoFreeBikes = Aucun vélo libre.
 VelomaBikeNotFound = Le vélo n'a pas été trouvé.
 VelomaFreeBikes = Vélos libres : %s.
 VelomaBikeIsNotFree = Le vélo n'est pas libre.
 VelomaBikeRented = Confirmation de location du vélo. Le code antivol est %s.
-VelomaBikeReturned = Confirmation de retour du vélo.
+VelomaUserCreditIsInsufficient = Votre solde de crédit est insuffisant pour la location de ce vélo.
+VelomaUserTooManyBikesRented = Vous avez dépassé le nombre limite de locations autorisées.
+VelomaBikeReturned = Confirmation de retour du vélo. Le code de l'antivol est %s. Merci d'enregistrer le nouveau code %s.
+VelomaBikeReturnedWithCredit = Confirmation de retour du vélo. Le code de l'antivol est %s. Merci d'enregistrer le nouveau code %. Votre nouveau solde de crédit est de %s.
 VelomaBikeIsNotRentedByYou = Vous n'êtes pas le loueur de ce vélo.
 VelomaBikeIsNotRented = Le vélo n'est pas en cours de location.
 VelomaBikeCommandNotAllowed = Vous ne disposez pas des droits pour exécuter cette commande.
@@ -102,3 +112,5 @@ VelomaBikeNoNoteFound = Aucun note n'a été trouvé.
 VelomaStandLAstTagDeleted = Votre dernière dégradation a été supprimée.
 VelomaStandNoTagFound = Aucun dégradation n'a été trouvée.
 VelomaBikeWasRentedBy = Le dernier loueur du vélo est %s.
+VelomaUserCredit = Votre crédit est de %s unités.
+VelomaErrorInCreatingUser = Une erreur est survenue lors de la création de l'utilisateur. Merci de vérifier les paramètres utilisés.
