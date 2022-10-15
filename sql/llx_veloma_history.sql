@@ -16,7 +16,7 @@
 --
 -- ============================================================================
 
-DROP TABLE `llx_veloma_history`;
+--DROP TABLE `llx_veloma_history`;
 
 CREATE TABLE IF NOT EXISTS `llx_veloma_history`
 (
