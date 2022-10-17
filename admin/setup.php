@@ -195,6 +195,25 @@ print '</form>';
 
 print '<form action="'.$_SERVER["PHP_SELF"].'" method="POST">';
 print '<tr class="oddeven">';
+print '<td>';
+print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
+print '<input type="hidden" name="action" value="update">';
+print '<input type="hidden" name="constname" value="VELOMA_INITIAL_LIMIT">';
+print '<input type="hidden" name="constnote" value="">';
+print $langs->trans('DescVELOMA_INITIAL_LIMIT');
+print '</td>';
+print '<td>';
+print '<input type="text" class="flat" name="constvalue" size="60" value="'.$conf->global->VELOMA_INITIAL_LIMIT.'" />';
+print '<input type="hidden" name="consttype" value="chaine">';
+print '</td>';
+print '<td align="center">';
+print '<input type="submit" class="button" value="'.$langs->trans("Update").'" name="Button">';
+print '</td>';
+print '</tr>';
+print '</form>';
+
+print '<form action="'.$_SERVER["PHP_SELF"].'" method="POST">';
+print '<tr class="oddeven">';
 // Show constant
 print '<td>';
 print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
@@ -218,6 +237,25 @@ print '</tr>';
 print '</form>';
 
 if (!empty($conf->global->VELOMA_USE_CREDIT)) {
+    print '<form action="'.$_SERVER["PHP_SELF"].'" method="POST">';
+    print '<tr class="oddeven">';
+    print '<td>';
+    print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
+    print '<input type="hidden" name="action" value="update">';
+    print '<input type="hidden" name="constname" value="VELOMA_INITIAL_CREDIT">';
+    print '<input type="hidden" name="constnote" value="">';
+    print $langs->trans('DescVELOMA_INITIAL_CREDIT');
+    print '</td>';
+    print '<td>';
+    print '<input type="text" class="flat" name="constvalue" size="60" value="'.$conf->global->VELOMA_INITIAL_CREDIT.'" />';
+    print '<input type="hidden" name="consttype" value="chaine">';
+    print '</td>';
+    print '<td align="center">';
+    print '<input type="submit" class="button" value="'.$langs->trans("Update").'" name="Button">';
+    print '</td>';
+    print '</tr>';
+    print '</form>';
+
     print '<form action="'.$_SERVER["PHP_SELF"].'" method="POST">';
     print '<tr class="oddeven">';
     print '<td>';
