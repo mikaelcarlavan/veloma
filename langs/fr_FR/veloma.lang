@@ -42,6 +42,8 @@ DescVELOMA_RENT_COST = Nombre de crédits consommés pour une période de temps
 DescVELOMA_RENT_DURATION = Nombre de minutes d'une période de temps
 DescVELOMA_FREE_DURATION = Nombre de minutes d'une course avant activation du crédit
 DescVELOMA_ALLOW_UNREGISTERED_USERS = Autoriser les utilisateurs non enregistrés
+DescVELOMA_INITIAL_LIMIT = Valeur initiale sur la limite de location
+DescVELOMA_INITIAL_CREDIT = Valeur initiale de crédit
 #
 # Page À propos
 #
@@ -67,17 +69,38 @@ VelomaAction = Action
 VelomaParameters = Paramètres
 
 # Commandes
+VelomaHelpCommand = HELP
+VelomaCreditCommand = CREDIT
+VelomaFreeCommand = FREE
+VelomaRentCommand = RENT
+VelomaReturnCommand = RETURN
+VelomaForceRentCommand = FORCERENT
+VelomaForceReturnCommand = FORCERETURN
+VelomaWhereCommand = WHERE
+VelomaWhoCommand = WHO
+VelomaInfoCommand = INFO
+VelomaNoteCommand = NOTE
+VelomaTagCommand = TAG
+VelomaDelNoteCommand = DELNOTE
+VelomaUnTagCommand = UNTAG
+VelomaAddCommand = ADD
+VelomaListCommand = LIST
+VelomaRevertCommand = REVERT
+VelomaLastCommand = LAST
+VelomaUnknownCommand = Commande inconue.
+#
 VelomaListCommands = Aide :
-VelomaHelpCommand = HELP : Service d'aide
-VelomaFreeCommand = FREE : Liste des vélos libres
-VelomaRentCommand = RENT X : Louer le vélo X
-VelomaReturnCommand = RETURN X Y : Retourne le vélo X à la station Y
-VelomaWhereCommand = WHERE X : Recherche le vélo X
-VelomaWhoCommand = WHO X : Utilisateur du vélo X
-VelomaInfoCommand = INFO X : Information sur la station X
-VelomaListCommand = LIST X : Liste les vélos de la station X
-VelomaAddCommand = ADD PRENOM NOM EMAIL CREDIT : Enregistre l'utilisateur avec PRENOM/NOM et EMAIL et définit son CREDIT initial.
+VelomaHelpCommandDetails = %s : Service d'aide
+VelomaFreeCommandDetails = %s : Liste des vélos libres
+VelomaRentCommandDetails = %s X : Louer le vélo X
+VelomaReturnCommandDetails = %s X Y : Retourne le vélo X à la station Y
+VelomaWhereCommandDetails = %s X : Recherche le vélo X
+VelomaWhoCommandDetails = %s X : Utilisateur du vélo X
+VelomaInfoCommandDetails = %s X : Information sur la station X
+VelomaListCommandDetails = %s X : Liste les vélos de la station X
+VelomaAddCommandDetails = %s PRENOM NOM EMAIL TEL CREDIT : Enregistre l'utilisateur avec PRENOM/NOM et EMAIL et définit son CREDIT initial.
 
+#
 VelomaNotRegistered = Votre compte n'a pas été trouvé. Merci de nous contacter pour être inscris sur la plateforme.
 VelomaNoFreeBikes = Aucun vélo libre.
 VelomaBikeNotFound = Le vélo n'a pas été trouvé.
