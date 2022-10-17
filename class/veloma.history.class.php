@@ -275,9 +275,17 @@ class VelomaHistory extends CommonObject
      * @param $action
      * @return    int              <0 if KO, >0 if OK
      */
-    function getTotalRentsForUser($fk_user, $action)
+    function getTotalRentsForUser($fk_user)
     {
-        //TODO
+        $sql = "SELECT e.*";
+        $sql .= " FROM ".MAIN_DB_PREFIX."bike as e";
+        $sql .= " WHERE e.fk_user = ".(int)$fk_user;
+        $sql .= " AND e.fk_stand <= 0";
+
+        $result = $this->db->query($sql);
+        if ($result) {
+            return $this->db->num_rows($result);
+        }
 
         return 0;
     }
