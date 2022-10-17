@@ -237,12 +237,20 @@ class Veloma extends CommonObject
                                                 $end = dol_now();
 
                                                 $duration = $end - $start;
+                                                // dol_syslog("Veloma::rent duration (s) ".$duration);
+
                                                 $duration = $duration > 0 ? ceil($duration/60) : 0;
+                                                // dol_syslog("Veloma::rent duration (m) ".$duration);
 
                                                 $cost = $conf->global->VELOMA_RENT_COST ? floatval($conf->global->VELOMA_RENT_COST) : 0;
                                                 $period = $conf->global->VELOMA_RENT_DURATION ? intval($conf->global->VELOMA_RENT_DURATION) : 0;
                                                 $free = $conf->global->VELOMA_FREE_DURATION ? intval($conf->global->VELOMA_FREE_DURATION) : 0;
                                                 $total = 0;
+
+                                                // dol_syslog("Veloma::rent cost ".$cost);
+                                                // dol_syslog("Veloma::rent period ".$period);
+                                                // dol_syslog("Veloma::rent free ".$free);
+
                                                 if ($duration > 0) {
                                                     if ($duration > $free) {
                                                         $duration -= $free;
@@ -250,10 +258,12 @@ class Veloma extends CommonObject
                                                         $total = round($total, 2);
                                                     }
 
+                                                    // dol_syslog("Veloma::rent total ".$total);
+
                                                     $credit = !empty($user->array_options['options_veloma_credit']) ? floatval($user->array_options['options_veloma_credit']) : 0;
                                                     $credit -= $total;
                                                     $user->array_options['options_veloma_credit'] = $credit;
-                                                    //$user->insertExtraFields();
+                                                    $user->insertExtraFields();
 
                                                     $response = $langs->transnoentities('VelomaBikeReturnedWithCredit', $oldcode, $newcode, price($credit));
                                                 }
