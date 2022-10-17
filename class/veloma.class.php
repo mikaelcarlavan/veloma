@@ -186,8 +186,8 @@ class Veloma extends CommonObject
                                 if ($bike->fk_user > 0) {
                                     $response = $langs->transnoentities('VelomaBikeIsNotFree');
                                 } else {
-                                    $credit = !empty($user->array_options['veloma_credit']) ? floatval($user->array_options['veloma_credit']) : 0;
-                                    $limit = !empty($user->array_options['veloma_limit']) ? intval($user->array_options['veloma_limit']) : 0;
+                                    $credit = !empty($user->array_options['options_veloma_credit']) ? floatval($user->array_options['options_veloma_credit']) : 0;
+                                    $limit = !empty($user->array_options['options_veloma_limit']) ? intval($user->array_options['options_veloma_limit']) : 0;
 
                                     $rents = $history->getTotalRentsForUser($user->id);
 
@@ -212,7 +212,7 @@ class Veloma extends CommonObject
                         $this->createHistory($user, $action, $text, $bike->id ?: -1, $current_fk_stand);
                     } else if ($action == trim($langs->transnoentities('VelomaReturnCommand'))) {
                         $ref = isset($data[1]) ? trim($data[1]) : '';
-                        $fk_stand = isset($data[2]) ? intval(trim($data[2])) : 0;
+                        $refs = isset($data[2]) ? trim($data[2]) : '';
                         $bike = new Bike($this->db);
                         $current_fk_stand = -1;
                         if ($bike->fetch(0, $ref) > 0) {
@@ -220,7 +220,7 @@ class Veloma extends CommonObject
                                 $current_fk_stand = $bike->fk_stand;
                                 if ($user->id == $bike->fk_user) {
                                     $stand = new Stand($this->db);
-                                    if ($stand->fetch($fk_stand) > 0) {
+                                    if ($stand->fetch(0, $refs) > 0) {
                                         $oldcode = $bike->code;
                                         $newcode = sprintf("%04d", rand(0, 9999));
                                         $bike->fk_user = -1;
@@ -230,7 +230,7 @@ class Veloma extends CommonObject
                                         $response = $langs->transnoentities('VelomaBikeReturned', $oldcode, $newcode);
 
                                         if (!empty($conf->global->VELOMA_USE_CREDIT)) {
-                                            $rent = $history->getLastActionForBikeAndUser($user->id, $bike->id, 'RENT');
+                                            $rent = $history->getLastActionForBikeAndUser($user->id, $bike->id, trim($langs->trans('VelomaRentCommand')));
                                             if ($rent) {
                                                 // Decrease credit
                                                 $start = $rent->datec;
@@ -250,15 +250,15 @@ class Veloma extends CommonObject
                                                         $total = round($total, 2);
                                                     }
 
-                                                    $credit = !empty($user->array_options['veloma_credit']) ? floatval($user->array_options['veloma_credit']) : 0;
+                                                    $credit = !empty($user->array_options['options_veloma_credit']) ? floatval($user->array_options['options_veloma_credit']) : 0;
                                                     $credit -= $total;
-                                                    $user->array_options['veloma_credit'] = $credit;
-                                                    $user->update($user);
-                                                    $response = $langs->transnoentities('VelomaBikeReturnedWithCredit', $oldcode, $newcode, $credit);
+                                                    $user->array_options['options_veloma_credit'] = $credit;
+                                                    //$user->insertExtraFields();
+
+                                                    $response = $langs->transnoentities('VelomaBikeReturnedWithCredit', $oldcode, $newcode, price($credit));
                                                 }
                                             }
                                         }
-
                                     } else {
                                         $response = $langs->transnoentities('VelomaStandNotFound');
                                     }
@@ -511,7 +511,7 @@ class Veloma extends CommonObject
                         $lastName = isset($data[2]) ? trim($data[2]) : '';
                         $email = isset($data[3]) ? trim($data[3]) : '';
                         $user_mobile = isset($data[4]) ? trim($data[4]) : '';
-                        $credit = isset($data[5]) ? trim($data[5]) : '';
+                        $credit = isset($data[5]) ? price2num(trim($data[5])) : 0;
 
                         $test = new User($this->db);
                         if ($user->admin) {
