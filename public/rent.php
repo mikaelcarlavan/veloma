@@ -19,10 +19,11 @@
  *     	\file       htdocs/veloma/public/index.php
  *		\ingroup    core
  */
+/*
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
-
+*/
 define('NOREQUIREMENU', 1);
 define('NOLOGIN', 1);
 
