@@ -29,7 +29,7 @@
     </div>
 </footer>
 
-<div x-cloak x-show="loginModalOpened" class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+<div x-cloak x-show="loginModalOpened" class="relative " style="z-index: 1000" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <div x-show="loginModalOpened"
          x-transition:enter="ease-out duration-300"
          x-transition:enter-start="opacity-0"
@@ -39,7 +39,7 @@
          x-transition:leave-end="opacity-0"
          class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
 
-    <div class="fixed inset-0 z-10 overflow-y-auto">
+    <div class="fixed inset-0  overflow-y-auto" style="z-index: 1000">
         <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
             <div x-show="loginModalOpened"
                  x-transition:enter="ease-out duration-300"
@@ -99,7 +99,7 @@
     </div>
 </div>
 
-<div x-cloak x-show="passwordModalOpened" class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+<div x-cloak x-show="passwordModalOpened" class="relative" style="z-index: 1000" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <div x-show="passwordModalOpened"
          x-transition:enter="ease-out duration-300"
          x-transition:enter-start="opacity-0"
@@ -109,7 +109,7 @@
          x-transition:leave-end="opacity-0"
          class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
 
-    <div class="fixed inset-0 z-10 overflow-y-auto">
+    <div class="fixed inset-0 overflow-y-auto" style="z-index: 1000">
         <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
             <div x-show="passwordModalOpened"
                  x-transition:enter="ease-out duration-300"
@@ -159,7 +159,7 @@
     </div>
 </div>
 
-<div x-cloak x-show="accountModalOpened" class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+<div x-cloak x-show="accountModalOpened" class="relative" style="z-index: 1000" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <div x-show="accountModalOpened"
          x-transition:enter="ease-out duration-300"
          x-transition:enter-start="opacity-0"
@@ -169,7 +169,7 @@
          x-transition:leave-end="opacity-0"
          class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
 
-    <div class="fixed inset-0 z-10 overflow-y-auto">
+    <div class="fixed inset-0 overflow-y-auto" style="z-index: 1000">
         <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
             <div x-show="accountModalOpened"
                  x-transition:enter="ease-out duration-300"
@@ -240,7 +240,7 @@
     </div>
 </div>
 
-<div x-cloak x-show="registerModalOpened" class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+<div x-cloak x-show="registerModalOpened" class="relative" style="z-index: 1000" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <div x-show="registerModalOpened"
          x-transition:enter="ease-out duration-300"
          x-transition:enter-start="opacity-0"
@@ -250,7 +250,7 @@
          x-transition:leave-end="opacity-0"
          class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
 
-    <div class="fixed inset-0 z-10 overflow-y-auto">
+    <div class="fixed inset-0 overflow-y-auto" style="z-index: 1000">
         <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
             <div x-show="registerModalOpened"
                  x-transition:enter="ease-out duration-300"
@@ -315,7 +315,7 @@
     </div>
 </div>
 
-<div x-cloak x-show="confirmationModalOpened" class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+<div x-cloak x-show="confirmationModalOpened" class="relative" style="z-index: 1000" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <div x-show="confirmationModalOpened"
          x-transition:enter="ease-out duration-300"
          x-transition:enter-start="opacity-0"
@@ -325,7 +325,7 @@
          x-transition:leave-end="opacity-0"
          class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
 
-    <div class="fixed inset-0 z-10 overflow-y-auto">
+    <div class="fixed inset-0 overflow-y-auto" style="z-index: 1000">
         <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
             <div x-show="confirmationModalOpened"
                  x-transition:enter="ease-out duration-300"
