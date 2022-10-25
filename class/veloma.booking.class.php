@@ -91,6 +91,11 @@ class VelomaBooking extends CommonObject
      */
     public $fk_bike;
 
+    /**
+     * Action comm id
+     * @var int
+     */
+    public $fk_action_comm;
 
     /**
      * Start date
@@ -135,18 +140,6 @@ class VelomaBooking extends CommonObject
     public $bike = null;
 
     /**
-     * Start date
-     * @var DateTime
-     */
-    public $start = null;
-
-    /**
-     * End date
-     * @var DateTime
-     */
-    public $end = null;
-
-    /**
      * Current user
      * @var User
      */
@@ -185,6 +178,7 @@ class VelomaBooking extends CommonObject
         'entity' =>array('type'=>'integer', 'label'=>'Entity', 'default'=>1, 'enabled'=>1, 'visible'=>-2, 'notnull'=>1, 'position'=>15, 'index'=>1),
         'fk_user' =>array('type'=>'integer:User:user/class/user.class.php', 'label'=>'VelomaUser', 'enabled'=>1, 'visible'=>1, 'position'=>35),
         'fk_bike' =>array('type'=>'integer:Bike:bike/class/bike.class.php', 'label'=>'VelomaBike', 'enabled'=>1, 'visible'=>1, 'position'=>40),
+        'fk_action_comm' =>array('type'=>'integer:ActionComm:comm/action/class/actioncomm.class.php', 'label'=>'VelomaActionComm', 'enabled'=>1, 'visible'=>-2, 'position'=>45),
         'dates' =>array('type'=>'datetime', 'label'=>'VelomaDateStart', 'enabled'=>1, 'visible'=>1, 'position'=>50),
         'datee' =>array('type'=>'datetime', 'label'=>'VelomaDateEnd', 'enabled'=>1, 'visible'=>1, 'position'=>60),
         'datec' =>array('type'=>'datetime', 'label'=>'DateCreation', 'enabled'=>1, 'visible'=>-1, 'position'=>70),
@@ -232,6 +226,7 @@ class VelomaBooking extends CommonObject
         $sql = "INSERT INTO ".MAIN_DB_PREFIX."veloma_booking (";
         $sql.= " fk_user";
         $sql.= " , fk_bike";
+        $sql.= " , fk_action_comm";
         $sql.= " , dates";
         $sql.= " , datee";
         $sql.= " , datec";
@@ -241,8 +236,9 @@ class VelomaBooking extends CommonObject
         $sql.= ") VALUES (";
         $sql.= " ".(!empty($this->fk_user) ? $this->fk_user : "0");
         $sql.= ", ".(!empty($this->fk_bike) ? $this->fk_bike : "0");
-        $sql.= ", ".(!empty($this->dates) ? "'".$this->db->escape($this->dates)."'" : "null");
-        $sql.= ", ".(!empty($this->datee) ? "'".$this->db->escape($this->datee)."'" : "null");
+        $sql.= ", ".(!empty($this->fk_action_comm) ? $this->fk_action_comm : "0");
+        $sql.= ", ".(!empty($this->dates) ? "'".$this->db->idate($this->dates)."'" : "null");
+        $sql.= ", ".(!empty($this->datee) ? "'".$this->db->idate($this->datee)."'" : "null");
         $sql.= ", ".(!empty($this->datec) ? "'".$this->db->idate($this->datec)."'" : "null");
         $sql.= ", ".(!empty($this->user_author_id) ? $this->user_author_id : "0");
         $sql.= ", ".(!empty($this->entity) ? $this->entity : "0");
@@ -297,6 +293,68 @@ class VelomaBooking extends CommonObject
     }
 
     /**
+     *	Update a record into database.
+     *
+     *	@param  User	$user       Object user making update
+     *  @param  int		$notrigger	    0=launch triggers after, 1=disable triggers
+     *	@return int         		1 if OK, -1 if ref already exists, -2 if other error
+     */
+    function update($user, $notrigger=0)
+    {
+        global $langs, $conf, $hookmanager;
+
+        $error=0;
+
+
+        // Clean parameters
+        $id = $this->id;
+
+        // Check parameters
+        if (empty($id))
+        {
+            $this->error = "Object must be fetched before calling update";
+            return -1;
+        }
+
+
+        $this->db->begin();
+
+        $sql = "UPDATE ".MAIN_DB_PREFIX."veloma_booking";
+        $sql.= " SET fk_user = ".(!empty($this->fk_user) ? $this->fk_user : "0");
+        $sql.= ", fk_bike = ".(!empty($this->fk_bike) ? $this->fk_bike : "0");
+        $sql.= ", fk_action_comm = ".(!empty($this->fk_action_comm) ? $this->fk_action_comm : "0");
+        $sql.= ", datee = ".(!empty($this->datee) ? "'".$this->db->idate($this->datee)."'" : "null");
+        $sql.= ", dates = ".(!empty($this->dates) ? "'".$this->db->idate($this->dates)."'" : "null");
+        $sql.= ", tms = '".$this->db->idate(dol_now())."'";
+        $sql.= " WHERE rowid = " . $id;
+
+        dol_syslog(get_class($this)."::update", LOG_DEBUG);
+
+        $resql = $this->db->query($sql);
+        if ($resql)
+        {
+            if (! $notrigger)
+            {
+                // Call trigger
+                $result = $this->call_trigger('VELOMABOOKING_MODIFY',$user);
+                if ($result < 0) $error++;
+                // End call triggers
+            }
+
+            $this->db->commit();
+            return 1;
+        }
+        else
+        {
+            $this->error=$langs->trans("Error")." : ".$this->db->error()." - ".$sql;
+            $this->errors[]=$this->error;
+            $this->db->rollback();
+
+            return -1;
+        }
+    }
+
+    /**
      *  Load a slice in memory from database
      *
      *  @param	int		$id      			Id of slide
@@ -317,7 +375,7 @@ class VelomaBooking extends CommonObject
             return -1;
         }
 
-        $sql = "SELECT e.rowid, e.dates, e.datee, e.datec, e.tms, e.fk_user, e.fk_bike, ";
+        $sql = "SELECT e.rowid, e.dates, e.datee, e.datec, e.tms, e.fk_user, e.fk_action_comm, e.fk_bike, ";
         $sql.= " e.user_author_id, e.entity ";
         $sql.= " FROM ".MAIN_DB_PREFIX."veloma_booking e";
         $sql.= " WHERE e.rowid=".$id;
@@ -333,13 +391,13 @@ class VelomaBooking extends CommonObject
 
                 $this->user_author_id 	= $obj->user_author_id;
 
-                $this->dates 			= $obj->dates;
-                $this->datee 			= $obj->datee;
+                $this->dates 			= $this->db->jdate($obj->dates);
+                $this->datee 			= $this->db->jdate($obj->datee);
 
                 $this->datec 			= $this->db->jdate($obj->datec);
                 $this->tms 			    = $this->db->jdate($obj->tms);
 
-
+                $this->fk_action_comm 	        = $obj->fk_action_comm;
                 $this->fk_user 	        = $obj->fk_user;
                 $this->fk_bike 	     = $obj->fk_bike;
 
@@ -353,18 +411,6 @@ class VelomaBooking extends CommonObject
                 if ($this->fk_user > 0) {
                     $this->user = new User($this->db);
                     $this->user->fetch($this->fk_user);
-                }
-
-                try {
-                    $this->start = new DateTime($this->dates);
-                } catch (Exception $e) {
-
-                }
-
-                try {
-                    $this->end = new DateTime($this->datee);
-                } catch (Exception $e) {
-
                 }
 
                 $this->fetch_optionals();
@@ -575,7 +621,7 @@ class VelomaBooking extends CommonObject
      *
      *  @return     int             		-1 if KO, array with result if OK
      */
-    function liste_array($fk_user = 0, $dates = '', $datee = '')
+    function liste_array($fk_user = 0, $dates = '', $datee = '', $mode ='rent')
     {
         global $user;
 
@@ -584,15 +630,26 @@ class VelomaBooking extends CommonObject
         $sql = "SELECT e.rowid as id, e.datec";
         $sql.= " FROM ".MAIN_DB_PREFIX."veloma_booking as e";
         $sql.= " WHERE e.entity IN (".getEntity('veloma_booking').")";
-        if (!empty($dates)) {
-            $sql.= " AND e.dates  >= '".$this->db->escape($dates)."'";
+        if ($mode == 'book') {
+            if (!empty($dates) && !empty($datee)) {
+                $sql.= " AND (";
+                $sql.= "(e.dates BETWEEN '".$this->db->idate($dates)."' AND '".$this->db->idate($datee)."')";
+                $sql.= " OR ";
+                $sql.= "(e.datee BETWEEN '".$this->db->idate($dates)."' AND '".$this->db->idate($datee)."')";
+                $sql.= ")";
+            }
+        } else {
+            if (!empty($dates) && !empty($datee)) {
+                $sql.= "AND (e.dates <= '".$this->db->idate($dates)."' AND e.datee >= '".$this->db->idate($datee)."')";
+            }
         }
-        if (!empty($datee)) {
-            $sql.= " AND e.datee  <= '".$this->db->escape($datee)."'";
-        }
+
+
         if ($fk_user > 0) {
             $sql.= " AND e.fk_user  = ".$fk_user;
         }
+
+        $sql.= " GROUP BY e.rowid ";
 
         $result=$this->db->query($sql);
         if ($result)

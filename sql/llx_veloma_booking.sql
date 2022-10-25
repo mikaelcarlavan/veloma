@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS `llx_veloma_booking`
     `rowid`          int(11) AUTO_INCREMENT,
     `fk_bike`        int(11) DEFAULT 0,
     `fk_user`        int(11) DEFAULT 0,
+    `fk_action_comm` int(11) DEFAULT 0,
     `user_author_id` int(11) DEFAULT 0,
     `datec`          datetime     NULL,
     `dates`          datetime     NULL,

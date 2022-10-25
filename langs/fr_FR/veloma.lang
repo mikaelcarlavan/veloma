@@ -160,6 +160,8 @@ VelomaMetaKeywords = Location vélos
 VelomaApplicationTitle = Véloma
 VelomaWelcomeTitle = Bienvenue sur notre plateforme de location de
 VelomaRentalsTitle = Mes locations de
+VelomaBookings = Réservations
+VelomaDatesAreEmpty = Les dates de début et de fin doivent être renseignées.
 VelomaBookingsTitle = Mes réservations de
 VelomaWelcomeBikes = vélos
 VelomaRentTitle = Louer un
@@ -239,6 +241,8 @@ VelomaPasswordValidation = Mot de passe oublié
 VelomaValidationCode = Code de validation
 VelomaRentStartedAt = Début de la location
 VelomaNoRentals = Aucune location n'a été trouvée.
+VelomaBookingEvent = Réservation du vélo %s
+VelomaActionComm = Agenda
 VelomaNoBookings = Aucune réservation n'a été trouvée.
 VelomaReturnBike = Retourner le vélo
 VelomaReturnBikeDesc = Merci d'indiquer la station où le vélo a été retourné.
@@ -246,3 +250,4 @@ VelomaNotLoggedIn = Merci de vous identifier pour accéder à cette ressource.
 VelomaWelcomeNewUser = Vous avez été correctement enregistré. Voici votre mot de passe de connexion %s.
 VelomaPasswordValidationDesc = Un code de confirmation a été envoyé par SMS. Merci de le renseigner ci-dessous.
 VelomaRentBikeMarker = <div class="text-center">Vélo <b>%s</b><br /><a href="%s" class="flex w-full items-center justify-center rounded-md border border-transparent px-4 py-1 whitespace-nowrap text-sm font-medium hover:bg-gray-200">Louer ce vélo</a></div>
+VelomaBookBikeMarker = <div class="text-center">Vélo <b>%s</b><br /><a href="%s" class="flex w-full items-center justify-center rounded-md border border-transparent px-4 py-1 whitespace-nowrap text-sm font-medium hover:bg-gray-200">Réserver ce vélo</a></div>

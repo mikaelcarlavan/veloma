@@ -114,6 +114,58 @@ class InterfaceVelomaTriggers extends DolibarrTriggers
                 $veloma->process($object);
 
 			break;
+
+            case 'VELOMABOOKING_CREATE':
+
+                dol_syslog("Trigger '".$this->name."' for action '$action' launched by ".__FILE__.". id=".$object->id);
+
+                $langs->load("veloma@veloma");
+
+                $event = new ActionComm($this->db);
+
+                $object->fetch($object->id);
+
+                $username = $object->user ? $object->user->getFullName($langs) : '';
+                $bike = $object->bike ? $object->bike->ref : '';
+
+                $label = $langs->trans('VelomaBookingEvent', $bike);
+
+                $event->priority = 0;
+                $event->fulldayevent = 0;
+                $event->location = '';
+                $event->label = $label;
+                $event->fk_project = 0;
+                $event->datep = $object->dates;
+                $event->datef = $object->datee;
+                $event->percentage = 0;
+                $event->duree = 0;
+
+                $event->userassigned = array();
+                $event->note_private = '';
+                $event->type_code = 'AC_RDV';
+
+                $fk_user = $object->fk_user ? $object->fk_user : 0;
+
+                $event->userownerid = $fk_user;
+                $result = $event->create($user);
+
+                if ($result > 0) {
+                    $object->fk_action_comm = $result;
+                    $object->update($user, 1);
+                }
+                break;
+
+            case 'VELOMABOOKING_DELETE':
+
+                dol_syslog("Trigger '".$this->name."' for action '$action' launched by ".__FILE__.". id=".$object->id);
+
+                $langs->load("veloma@veloma");
+
+                $actioncomm = new ActionComm($this->db);
+                if ($actioncomm->fetch($object->fk_action_comm) > 0) {
+                    $actioncomm->delete();
+                }
+                break;
 		}
 
 		return 0;

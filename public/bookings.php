@@ -73,7 +73,7 @@ $bikes = $bike->liste_array();
 
 if ($action == 'confirm') {
     if ($booking->fetch($id) > 0) {
-        if (!isset($bikes[$id])) {
+        if (!isset($bikes[$booking->fk_bike])) {
             $site->addError($langs->trans('VelomaBikeNotFound'));
         } else {
             $booking->delete($user);
@@ -123,8 +123,8 @@ $bookings = $booking->liste_array($user->id);
                                         <tr>
                                             <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6"><?php echo $bike ? $bike->ref : ''; ?></td>
                                             <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"><?php echo $bike ? $bike->code : ''; ?></td>
-                                            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"><?php echo $start ? $start->format('d-m-Y H:i') : ''; ?></td>
-                                            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"><?php echo $end ? $end->format('d-m-Y H:i') : ''; ?></td>
+                                            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"><?php echo dol_print_date($b->dates, 'dayhour'); ?></td>
+                                            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"><?php echo dol_print_date($b->datee, 'dayhour'); ?></td>
                                             <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                                                 <a href="<?php echo dol_buildpath('/veloma/public/bookings.php?action=cancel&id='.$b->id, 1); ?>" class="text-green-600 hover:text-green-900"><?php echo $langs->trans('VelomaCancelBook'); ?></a>
                                             </td>
