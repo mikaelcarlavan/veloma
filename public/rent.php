@@ -140,27 +140,27 @@ if ($id > 0) {
 
                 <div class="mt-6 space-y-6">
                     <div>
+                        <label for="confirm-phone" class="block text-sm font-medium text-gray-700"><?php echo $langs->trans('VelomaPhone'); ?></label>
+                        <div class="mt-1">
+                            <input name="confirm-phone" id="confirm-phone" type="tel" autocomplete="tel" value="<?php echo GETPOST('confirm-phone'); ?>" required class="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-green-500 focus:outline-none focus:ring-green-500 sm:text-sm">
+                        </div>
+                    </div>
+                    <div>
                         <label for="confirm-firstname" class="block text-sm font-medium text-gray-700"><?php echo $langs->trans('VelomaFirstName'); ?></label>
                         <div class="mt-1">
-                            <input name="confirm-firstname" id="confirm-firstname" type="text" autocomplete="given-name" value="<?php echo GETPOST('confirm-firstname'); ?>" required class="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-green-500 focus:outline-none focus:ring-green-500 sm:text-sm">
+                            <input name="confirm-firstname" id="confirm-firstname" type="text" autocomplete="given-name" value="<?php echo GETPOST('confirm-firstname'); ?>" class="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-green-500 focus:outline-none focus:ring-green-500 sm:text-sm">
                         </div>
                     </div>
                     <div>
                         <label for="confirm-lastname" class="block text-sm font-medium text-gray-700"><?php echo $langs->trans('VelomaLastName'); ?></label>
                         <div class="mt-1">
-                            <input name="confirm-lastname" id="confirm-lastname" type="text" autocomplete="family-name" value="<?php echo GETPOST('confirm-lastname'); ?>" required class="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-green-500 focus:outline-none focus:ring-green-500 sm:text-sm">
+                            <input name="confirm-lastname" id="confirm-lastname" type="text" autocomplete="family-name" value="<?php echo GETPOST('confirm-lastname'); ?>" class="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-green-500 focus:outline-none focus:ring-green-500 sm:text-sm">
                         </div>
                     </div>
                     <div>
                         <label for="confirm-email" class="block text-sm font-medium text-gray-700"><?php echo $langs->trans('VelomaEmail'); ?></label>
                         <div class="mt-1">
-                            <input name="confirm-email" id="confirm-email" type="email" autocomplete="email" value="<?php echo GETPOST('confirm-email'); ?>" required class="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-green-500 focus:outline-none focus:ring-green-500 sm:text-sm">
-                        </div>
-                    </div>
-                    <div>
-                        <label for="confirm-phone" class="block text-sm font-medium text-gray-700"><?php echo $langs->trans('VelomaPhone'); ?></label>
-                        <div class="mt-1">
-                            <input name="confirm-phone" id="confirm-phone" type="tel" autocomplete="tel" value="<?php echo GETPOST('confirm-phone'); ?>" required class="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-green-500 focus:outline-none focus:ring-green-500 sm:text-sm">
+                            <input name="confirm-email" id="confirm-email" type="email" autocomplete="email" value="<?php echo GETPOST('confirm-email'); ?>" class="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-green-500 focus:outline-none focus:ring-green-500 sm:text-sm">
                         </div>
                     </div>
                 </div>

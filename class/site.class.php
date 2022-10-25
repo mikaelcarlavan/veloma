@@ -469,7 +469,7 @@ class Site extends CommonObject
                 if (!empty($password)) {
                     $user->setPassword($user, $password, 0);
                 }
-                
+
                 $user->fetch($user->id);
                 $this->addMessage($langs->transnoentities('VelomaAccountUpdated'));
 
@@ -532,13 +532,18 @@ class Site extends CommonObject
             $fuser = new User($this->db);
 
             $fuser->login = $veloma->getLogin($phone);
-            $fuser->pass = '';
             $fuser->lastname = empty($lastname) ? $phone : $lastname;
             $fuser->firstname = $firstname;
             $fuser->email = $email;
             $fuser->user_mobile = $phone;
 
             $fuser->api_key = dol_hash($fuser->login . uniqid() . $conf->global->MAIN_API_KEY, 1);
+
+            if (!empty($conf->global->VELOMA_USE_CREDIT)) {
+                $fuser->array_options['options_veloma_credit'] = floatval($conf->global->VELOMA_INITIAL_CREDIT);
+            }
+            $fuser->array_options['options_veloma_limit'] = $conf->global->VELOMA_INITIAL_LIMIT;
+
 
             if ($fuser->create($user) < 0) {
                 $error++;
@@ -554,12 +559,7 @@ class Site extends CommonObject
                     $user->SetInGroup($conf->global->VELOMA_USERS_GROUP_ID, $conf->entity);
                 }
 
-                $this->addMessage($langs->transnoentities('VelomaWelcomeNewUser'));
-
-                $response = $langs->transnoentities('VelomaWelcomeNewUserSms', $newpassword);
-                $sms = new VelomaSMS($this->db);
-                $sms->create($phone, $response, $user);
-
+                $this->addMessage($langs->transnoentities('VelomaWelcomeNewUser', $newpassword));
                 return $this->load($user);
             }
         } else {
