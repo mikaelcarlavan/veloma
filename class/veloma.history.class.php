@@ -82,7 +82,7 @@ class VelomaHistory extends CommonObject
 	protected $table_ref_field = 'rowid';
 
 	/**
-     * Gestion id
+     * History id
      * @var int
      */
 	public $id = 0;
@@ -404,7 +404,7 @@ class VelomaHistory extends CommonObject
 			if (! $notrigger)
 			{
 	            // Call trigger
-	            $result = $this->call_trigger('VELOMA_HISTORY_CREATE',$user);
+	            $result = $this->call_trigger('VELOMAHISTORY_CREATE',$user);
 	            if ($result < 0) $error++;
 	            // End call triggers
 			}
