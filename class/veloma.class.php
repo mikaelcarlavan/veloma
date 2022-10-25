@@ -23,6 +23,7 @@
  */
 require_once DOL_DOCUMENT_ROOT.'/core/class/commonobject.class.php';
 dol_include_once("/veloma/class/veloma.history.class.php");
+dol_include_once("/veloma/class/veloma.sms.class.php");
 dol_include_once("/dolipush/class/dolipush.class.php");
 dol_include_once("/bike/class/bike.class.php");
 dol_include_once("/stand/class/stand.class.php");
@@ -125,102 +126,100 @@ class Veloma extends CommonObject
     {
         global $conf, $langs;
 
-        $dolipush = new Dolipush($this->db);
+        // Process SMS
+        $text = $object->text;
+        $number = $object->number;
 
-        if ($object->type == Dolipush::TYPE_RECEIVED) {
-            // Process SMS
-            $text = $object->text;
-            $number = $object->number;
+        //$u = $veloma->getUser($number);
+        dol_syslog("Veloma::process received from ".$number." text ".$text);
 
-            //$u = $veloma->getUser($number);
-            dol_syslog("Veloma::process received from ".$number." text ".$text);
+        $history = new VelomaHistory($this->db);
 
-            $history = new VelomaHistory($this->db);
+        $data = explode(' ', $text);
+        if (count($data) > 0) {
+            $action = trim(strtoupper($data[0]));
 
-            $data = explode(' ', $text);
-            if (count($data) > 0) {
-                $action = trim(strtoupper($data[0]));
+            $user = $this->getUser($number);
 
-                $user = $this->getUser($number);
+            $response = '';
+            dol_syslog("Veloma::process action is ".$action);
 
-                $response = '';
-                dol_syslog("Veloma::process action is ".$action);
+            if ($user->id > 0) {
+                if ($action == $langs->transnoentities('VelomaHelpCommand')) {
+                    $response = $this->getHelp($user);
+                    $this->createHistory($user, $action, $text);
+                } else if ($action == 'CREDIT' && !empty($conf->global->VELOMA_USE_CREDIT)) {
+                    $options = $user->array_options;
+                    $credit = !empty($options['options_veloma_credit']) ? $options['options_veloma_credit'] : 0;
+                    $response = $langs->transnoentities('VelomaUserCredit', $credit);
 
-                if ($user->id > 0) {
-                    if ($action == $langs->transnoentities('VelomaHelpCommand')) {
-                        $response = $this->getHelp($user);
-                        $this->createHistory($user, $action, $text);
-                    } else if ($action == 'CREDIT' && !empty($conf->global->VELOMA_USE_CREDIT)) {
-                        $options = $user->array_options;
-                        $credit = !empty($options['options_veloma_credit']) ? $options['options_veloma_credit'] : 0;
-                        $response = $langs->transnoentities('VelomaUserCredit', $credit);
-
-                        $this->createHistory($user, $action, $text);
-                    } else if ($action == trim($langs->transnoentities('VelomaFreeCommand'))) {
-                        // List free bikes
-                        $bike = new Bike($this->db);
-                        $bikes = $bike->liste_free_array();
-                        $numBikes = array();
-                        if (is_array($bikes) && count($bikes)) {
-                            foreach ($bikes as $bike) {
-                                if ($bike->active) {
-                                    $numBikes[] =  $bike->ref;
-                                }
+                    $this->createHistory($user, $action, $text);
+                } else if ($action == trim($langs->transnoentities('VelomaFreeCommand'))) {
+                    // List free bikes
+                    $bike = new Bike($this->db);
+                    $bikes = $bike->liste_free_array();
+                    $numBikes = array();
+                    if (is_array($bikes) && count($bikes)) {
+                        foreach ($bikes as $bike) {
+                            if ($bike->active) {
+                                $numBikes[] =  $bike->ref;
                             }
                         }
+                    }
 
-                        if (count($numBikes)) {
-                            $response = $langs->transnoentities('VelomaFreeBikes', implode(' ', $numBikes));
-                        } else {
-                            $response = $langs->transnoentities('VelomaNoFreeBikes');
-                        }
+                    if (count($numBikes)) {
+                        $response = $langs->transnoentities('VelomaFreeBikes', implode(' ', $numBikes));
+                    } else {
+                        $response = $langs->transnoentities('VelomaNoFreeBikes');
+                    }
 
-                        $this->createHistory($user, $action, $text);
-                    } else if ($action == trim($langs->transnoentities('VelomaRentCommand'))) {
-                        $ref = isset($data[1]) ? trim($data[1]) : '';
-                        $bike = new Bike($this->db);
-                        $current_fk_stand = -1;
-                        if ($bike->fetch(0, $ref) > 0) {
-                            if ($bike->active) {
-                                $current_fk_stand = $bike->fk_stand;
-                                if ($bike->fk_user > 0) {
-                                    $response = $langs->transnoentities('VelomaBikeIsNotFree');
-                                } else {
-                                    $credit = !empty($user->array_options['options_veloma_credit']) ? floatval($user->array_options['options_veloma_credit']) : 0;
-                                    $limit = !empty($user->array_options['options_veloma_limit']) ? intval($user->array_options['options_veloma_limit']) : 0;
-
-                                    $rents = $history->getTotalRentsForUser($user->id);
-
-                                    if (!empty($conf->global->VELOMA_USE_CREDIT) && $credit < 0) {
-                                        $response = $langs->transnoentities('VelomaUserCreditIsInsufficient');
-                                    } else if ($rents >= $limit) {
-                                        $response = $langs->transnoentities('VelomaUserTooManyBikesRented');
-                                    } else {
-                                        $bike->fk_user = $user->id;
-                                        $bike->fk_stand = -1;
-                                        $bike->update($user);
-                                        $response = $langs->transnoentities('VelomaBikeRented', $bike->code);
-                                    }
-                                }
+                    $this->createHistory($user, $action, $text);
+                } else if ($action == trim($langs->transnoentities('VelomaRentCommand'))) {
+                    $ref = isset($data[1]) ? trim($data[1]) : '';
+                    $bike = new Bike($this->db);
+                    $current_fk_stand = -1;
+                    if ($bike->fetch(0, $ref) > 0) {
+                        if ($bike->active) {
+                            $current_fk_stand = $bike->fk_stand;
+                            if ($bike->fk_user > 0) {
+                                $response = $langs->transnoentities('VelomaBikeIsNotFree');
                             } else {
-                                $response = $langs->transnoentities('VelomaBikeNotFound');
+                                $credit = !empty($user->array_options['options_veloma_credit']) ? floatval($user->array_options['options_veloma_credit']) : 0;
+                                $limit = !empty($user->array_options['options_veloma_limit']) ? intval($user->array_options['options_veloma_limit']) : 0;
+
+                                $rents = $history->getTotalRentsForUser($user->id);
+
+                                if (!empty($conf->global->VELOMA_USE_CREDIT) && $credit < 0) {
+                                    $response = $langs->transnoentities('VelomaUserCreditIsInsufficient');
+                                } else if ($rents >= $limit) {
+                                    $response = $langs->transnoentities('VelomaUserTooManyBikesRented');
+                                } else {
+                                    $bike->fk_user = $user->id;
+                                    $bike->fk_stand = -1;
+                                    $bike->update($user);
+                                    $response = $langs->transnoentities('VelomaBikeRented', $bike->code);
+                                }
                             }
                         } else {
                             $response = $langs->transnoentities('VelomaBikeNotFound');
                         }
+                    } else {
+                        $response = $langs->transnoentities('VelomaBikeNotFound');
+                    }
 
-                        $this->createHistory($user, $action, $text, $bike->id ?: -1, $current_fk_stand);
-                    } else if ($action == trim($langs->transnoentities('VelomaReturnCommand'))) {
-                        $ref = isset($data[1]) ? trim($data[1]) : '';
-                        $refs = isset($data[2]) ? trim($data[2]) : '';
-                        $bike = new Bike($this->db);
-                        $current_fk_stand = -1;
-                        if ($bike->fetch(0, $ref) > 0) {
-                            if ($bike->active) {
-                                $current_fk_stand = $bike->fk_stand;
-                                if ($user->id == $bike->fk_user) {
-                                    $stand = new Stand($this->db);
-                                    if ($stand->fetch(0, $refs) > 0) {
+                    $this->createHistory($user, $action, $text, $bike->id ?: -1, $current_fk_stand);
+                } else if ($action == trim($langs->transnoentities('VelomaReturnCommand'))) {
+                    $ref = isset($data[1]) ? trim($data[1]) : '';
+                    $refs = isset($data[2]) ? trim($data[2]) : '';
+                    $bike = new Bike($this->db);
+                    $current_fk_stand = -1;
+                    if ($bike->fetch(0, $ref) > 0) {
+                        if ($bike->active) {
+                            $current_fk_stand = $bike->fk_stand;
+                            if ($user->id == $bike->fk_user) {
+                                $stand = new Stand($this->db);
+                                if ($stand->fetch(0, $refs) > 0) {
+                                    if ($stand->active) {
                                         $oldcode = $bike->code;
                                         $newcode = sprintf("%04d", rand(0, 9999));
                                         $bike->fk_user = -1;
@@ -273,166 +272,181 @@ class Veloma extends CommonObject
                                         $response = $langs->transnoentities('VelomaStandNotFound');
                                     }
                                 } else {
-                                    $response = $langs->transnoentities('VelomaBikeIsNotRentedByYou');
+                                    $response = $langs->transnoentities('VelomaStandNotFound');
                                 }
                             } else {
-                                $response = $langs->transnoentities('VelomaBikeNotFound');
+                                $response = $langs->transnoentities('VelomaBikeIsNotRentedByYou');
                             }
                         } else {
                             $response = $langs->transnoentities('VelomaBikeNotFound');
                         }
+                    } else {
+                        $response = $langs->transnoentities('VelomaBikeNotFound');
+                    }
 
-                        $this->createHistory($user, $action, $text, $bike->id ?: -1, $current_fk_stand);
-                    } else if ($action == trim($langs->transnoentities('VelomaForceRentCommand'))) {
-                        $ref = isset($data[1]) ? trim($data[1]) : '';
-                        $bike = new Bike($this->db);
-                        $current_fk_stand = -1;
-                        if ($user->admin) {
-                            if ($bike->fetch(0, $ref) > 0) {
-                                $current_fk_stand = $bike->fk_stand;
-                                $bike->fk_user = $user->id;
-                                $bike->fk_stand = -1;
-                                $bike->update($user);
-                                $response = $langs->transnoentities('VelomaBikeRented', $bike->code);
-                            } else {
-                                $response = $langs->transnoentities('VelomaBikeNotFound');
-                            }
-                        } else {
-                            $response = $langs->transnoentities('VelomaBikeCommandNotAllowed');
-                        }
-
-                        $this->createHistory($user, $action, $text, $bike->id ?: -1, $current_fk_stand);
-
-                    } else if ($action == trim($langs->transnoentities('VelomaForceReturnCommand'))) {
-                        $ref = isset($data[1]) ? trim($data[1]) : '';
-                        $refs = isset($data[2]) ? trim($data[2]) : '';
-                        $bike = new Bike($this->db);
-                        $current_fk_stand = -1;
-                        if ($user->admin) {
-                            if ($bike->fetch(0, $ref) > 0) {
-                                $current_fk_stand = $bike->fk_stand;
-                                $stand = new Stand($this->db);
-                                if ($stand->fetch(0, $refs) > 0) {
-                                    $bike->fk_user = -1;
-                                    $bike->fk_stand = $stand->id;
-                                    $bike->update($user);
-                                    $response = $langs->transnoentities('VelomaBikeReturned');
-                                } else {
-                                    $response = $langs->transnoentities('VelomaStandNotFound');
-                                }
-                            } else {
-                                $response = $langs->transnoentities('VelomaBikeNotFound');
-                            }
-                        } else {
-                            $response = $langs->transnoentities('VelomaBikeCommandNotAllowed');
-                        }
-
-                        $this->createHistory($user, $action, $text, $bike->id ?: -1, $current_fk_stand);
-                    } else if ($action == trim($langs->transnoentities('VelomaWhereCommand'))) {
-                        $ref = isset($data[1]) ? trim($data[1]) : '';
-                        $bike = new Bike($this->db);
+                    $this->createHistory($user, $action, $text, $bike->id ?: -1, $current_fk_stand);
+                } else if ($action == trim($langs->transnoentities('VelomaForceRentCommand'))) {
+                    $ref = isset($data[1]) ? trim($data[1]) : '';
+                    $bike = new Bike($this->db);
+                    $current_fk_stand = -1;
+                    if ($user->admin) {
                         if ($bike->fetch(0, $ref) > 0) {
-                            if ($bike->active) {
-                                if ($bike->fk_stand > 0) {
-                                    $s = new Stand($this->db);
-                                    if ($s->fetch($bike->fk_stand) > 0) {
+                            $current_fk_stand = $bike->fk_stand;
+                            $bike->fk_user = $user->id;
+                            $bike->fk_stand = -1;
+                            $bike->update($user);
+                            $response = $langs->transnoentities('VelomaBikeRented', $bike->code);
+                        } else {
+                            $response = $langs->transnoentities('VelomaBikeNotFound');
+                        }
+                    } else {
+                        $response = $langs->transnoentities('VelomaBikeCommandNotAllowed');
+                    }
+
+                    $this->createHistory($user, $action, $text, $bike->id ?: -1, $current_fk_stand);
+
+                } else if ($action == trim($langs->transnoentities('VelomaForceReturnCommand'))) {
+                    $ref = isset($data[1]) ? trim($data[1]) : '';
+                    $refs = isset($data[2]) ? trim($data[2]) : '';
+                    $bike = new Bike($this->db);
+                    $current_fk_stand = -1;
+                    if ($user->admin) {
+                        if ($bike->fetch(0, $ref) > 0) {
+                            $current_fk_stand = $bike->fk_stand;
+                            $stand = new Stand($this->db);
+                            if ($stand->fetch(0, $refs) > 0) {
+                                $oldcode = $bike->code;
+                                // $newcode = sprintf("%04d", rand(0, 9999));
+
+                                $bike->fk_user = -1;
+                                $bike->fk_stand = $stand->id;
+                                $bike->update($user);
+                                $response = $langs->transnoentities('VelomaBikeReturned', $oldcode, $oldcode);
+                            } else {
+                                $response = $langs->transnoentities('VelomaStandNotFound');
+                            }
+                        } else {
+                            $response = $langs->transnoentities('VelomaBikeNotFound');
+                        }
+                    } else {
+                        $response = $langs->transnoentities('VelomaBikeCommandNotAllowed');
+                    }
+
+                    $this->createHistory($user, $action, $text, $bike->id ?: -1, $current_fk_stand);
+                } else if ($action == trim($langs->transnoentities('VelomaWhereCommand'))) {
+                    $ref = isset($data[1]) ? trim($data[1]) : '';
+                    $bike = new Bike($this->db);
+                    if ($bike->fetch(0, $ref) > 0) {
+                        if ($bike->active) {
+                            if ($bike->fk_stand > 0) {
+                                $s = new Stand($this->db);
+                                if ($s->fetch($bike->fk_stand) > 0) {
+                                    if ($s->active) {
                                         $response = $langs->transnoentities('VelomaBikeIsLocatedAt', $s->name, $s->latitude, $s->longitude);
                                     } else {
                                         $response = $langs->transnoentities('VelomaBikeStandNotFound');
                                     }
                                 } else {
-                                    $response = $langs->transnoentities('VelomaBikeNotRented');
+                                    $response = $langs->transnoentities('VelomaBikeStandNotFound');
                                 }
                             } else {
-                                $response = $langs->transnoentities('VelomaBikeNotFound');
+                                $response = $langs->transnoentities('VelomaBikeNotRented');
                             }
                         } else {
                             $response = $langs->transnoentities('VelomaBikeNotFound');
                         }
+                    } else {
+                        $response = $langs->transnoentities('VelomaBikeNotFound');
+                    }
 
-                        $this->createHistory($user, $action, $text, $bike->id ?: -1, $bike->fk_stand ?: -1);
-                    } else if ($action == trim($langs->transnoentities('VelomaWhoCommand'))) {
-                        $ref = isset($data[1]) ? trim($data[1]) : '';
-                        $bike = new Bike($this->db);
+                    $this->createHistory($user, $action, $text, $bike->id ?: -1, $bike->fk_stand ?: -1);
+                } else if ($action == trim($langs->transnoentities('VelomaWhoCommand'))) {
+                    $ref = isset($data[1]) ? trim($data[1]) : '';
+                    $bike = new Bike($this->db);
 
-                        if ($user->admin) {
-                            if ($bike->fetch(0, $ref) > 0) {
-                                if ($bike->fk_user > 0) {
-                                    $u = new User($this->db);
-                                    if ($u->fetch($bike->fk_user) > 0) {
-                                        $response = $langs->transnoentities('VelomaBikeIsRentedBy', $u->user_mobile);
-                                    } else {
-                                        $response = $langs->transnoentities('VelomaBikeUserNotFound');
-                                    }
+                    if ($user->admin) {
+                        if ($bike->fetch(0, $ref) > 0) {
+                            if ($bike->fk_user > 0) {
+                                $u = new User($this->db);
+                                if ($u->fetch($bike->fk_user) > 0) {
+                                    $response = $langs->transnoentities('VelomaBikeIsRentedBy', $u->user_mobile);
                                 } else {
-                                    $response = $langs->transnoentities('VelomaBikeNotRented');
+                                    $response = $langs->transnoentities('VelomaBikeUserNotFound');
                                 }
                             } else {
-                                $response = $langs->transnoentities('VelomaBikeNotFound');
+                                $response = $langs->transnoentities('VelomaBikeNotRented');
                             }
                         } else {
-                            $response = $langs->transnoentities('VelomaBikeCommandNotAllowed');
+                            $response = $langs->transnoentities('VelomaBikeNotFound');
                         }
+                    } else {
+                        $response = $langs->transnoentities('VelomaBikeCommandNotAllowed');
+                    }
 
-                        $this->createHistory($user, $action, $text, $bike->id ?: -1, $bike->fk_stand ?: -1);
+                    $this->createHistory($user, $action, $text, $bike->id ?: -1, $bike->fk_stand ?: -1);
 
-                    } else if ($action == trim($langs->transnoentities('VelomaInfoCommand'))) {
-                        $ref = isset($data[1]) ? trim($data[1]) : '';
-                        $stand = new Stand($this->db);
-                        if ($stand->fetch(0, $ref) > 0) {
+                } else if ($action == trim($langs->transnoentities('VelomaInfoCommand'))) {
+                    $ref = isset($data[1]) ? trim($data[1]) : '';
+                    $stand = new Stand($this->db);
+                    if ($stand->fetch(0, $ref) > 0) {
+                        if ($stand->active) {
                             $response = $langs->transnoentities('VelomaStandInfo', $stand->name, $stand->description, $stand->latitude, $stand->longitude);
                         } else {
                             $response = $langs->transnoentities('VelomaStandNotFound');
                         }
+                    } else {
+                        $response = $langs->transnoentities('VelomaStandNotFound');
+                    }
 
-                        $this->createHistory($user, $action, $text, -1, $stand->id ?: -1);
+                    $this->createHistory($user, $action, $text, -1, $stand->id ?: -1);
 
-                    } else if ($action == trim($langs->transnoentities('VelomaNoteCommand'))) {
-                        $ref = isset($data[1]) ? trim($data[1]) : '';
-                        // Remove action
-                        if (count($data)) {
-                            array_shift($data);
-                        }
-                        // Remove id
-                        if (count($data)) {
-                            array_shift($data);
-                        }
+                } else if ($action == trim($langs->transnoentities('VelomaNoteCommand'))) {
+                    $ref = isset($data[1]) ? trim($data[1]) : '';
+                    // Remove action
+                    if (count($data)) {
+                        array_shift($data);
+                    }
+                    // Remove id
+                    if (count($data)) {
+                        array_shift($data);
+                    }
 
-                        $note = count($data) ? implode(' ', $data) : '';
-                        $bike = new Bike($this->db);
+                    $note = count($data) ? implode(' ', $data) : '';
+                    $bike = new Bike($this->db);
 
-                        if ($bike->fetch(0, $ref) > 0) {
-                            if ($bike->active) {
-                                if (!empty($note)) {
-                                    $bike->addline($note, $user->id);
-                                    $response = $langs->transnoentities('VelomaBikeNoteAdded');
-                                } else {
-                                    $response = $langs->transnoentities('VelomaBikeNoteIsEmpty');
-                                }
+                    if ($bike->fetch(0, $ref) > 0) {
+                        if ($bike->active) {
+                            if (!empty($note)) {
+                                $bike->addline($note, $user->id);
+                                $response = $langs->transnoentities('VelomaBikeNoteAdded');
                             } else {
-                                $response = $langs->transnoentities('VelomaBikeNotFound');
+                                $response = $langs->transnoentities('VelomaBikeNoteIsEmpty');
                             }
                         } else {
                             $response = $langs->transnoentities('VelomaBikeNotFound');
                         }
+                    } else {
+                        $response = $langs->transnoentities('VelomaBikeNotFound');
+                    }
 
-                        $this->createHistory($user, $action, $text, $bike->id ?: -1, $bike->fk_stand ?: -1);
+                    $this->createHistory($user, $action, $text, $bike->id ?: -1, $bike->fk_stand ?: -1);
 
-                    } else if ($action == trim($langs->transnoentities('VelomaTagCommand'))) {
-                        $ref = isset($data[1]) ? trim($data[1]) : '';
-                        // Remove action
-                        if (count($data)) {
-                            array_shift($data);
-                        }
-                        // Remove id
-                        if (count($data)) {
-                            array_shift($data);
-                        }
+                } else if ($action == trim($langs->transnoentities('VelomaTagCommand'))) {
+                    $ref = isset($data[1]) ? trim($data[1]) : '';
+                    // Remove action
+                    if (count($data)) {
+                        array_shift($data);
+                    }
+                    // Remove id
+                    if (count($data)) {
+                        array_shift($data);
+                    }
 
-                        $note = count($data) ? implode(' ', $data) : '';
-                        $stand = new Stand($this->db);
+                    $note = count($data) ? implode(' ', $data) : '';
+                    $stand = new Stand($this->db);
 
-                        if ($stand->fetch(0, $ref) > 0) {
+                    if ($stand->fetch(0, $ref) > 0) {
+                        if ($stand->active) {
                             if (!empty($note)) {
                                 $stand->addline($note, $user->id);
                                 $response = $langs->transnoentities('VelomaStandTagAdded');
@@ -442,37 +456,41 @@ class Veloma extends CommonObject
                         } else {
                             $response = $langs->transnoentities('VelomaStandNotFound');
                         }
+                    } else {
+                        $response = $langs->transnoentities('VelomaStandNotFound');
+                    }
 
-                        $this->createHistory($user, $action, $text, -1, $stand->id ?: -1);
+                    $this->createHistory($user, $action, $text, -1, $stand->id ?: -1);
 
-                    } else if ($action == trim($langs->transnoentities('VelomaDelNoteCommand'))) {
-                        $ref = isset($data[1]) ? trim($data[1]) : '';
-                        $bike = new Bike($this->db);
+                } else if ($action == trim($langs->transnoentities('VelomaDelNoteCommand'))) {
+                    $ref = isset($data[1]) ? trim($data[1]) : '';
+                    $bike = new Bike($this->db);
 
-                        if ($bike->fetch(0, $ref) > 0) {
-                            if ($bike->active) {
-                                $lineid = $bike->fetch_last_lineid($user->id);
+                    if ($bike->fetch(0, $ref) > 0) {
+                        if ($bike->active) {
+                            $lineid = $bike->fetch_last_lineid($user->id);
 
-                                if ($lineid) {
-                                    $bike->deleteline($user, $lineid);
-                                    $response = $langs->transnoentities('VelomaBikeLastNoteDeleted');
-                                } else {
-                                    $response = $langs->transnoentities('VelomaBikeNoNoteFound');
-                                }
+                            if ($lineid) {
+                                $bike->deleteline($user, $lineid);
+                                $response = $langs->transnoentities('VelomaBikeLastNoteDeleted');
                             } else {
-                                $response = $langs->transnoentities('VelomaBikeNotFound');
+                                $response = $langs->transnoentities('VelomaBikeNoNoteFound');
                             }
                         } else {
                             $response = $langs->transnoentities('VelomaBikeNotFound');
                         }
+                    } else {
+                        $response = $langs->transnoentities('VelomaBikeNotFound');
+                    }
 
-                        $this->createHistory($user, $action, $text, $bike->id ?: -1, $bike->fk_stand);
+                    $this->createHistory($user, $action, $text, $bike->id ?: -1, $bike->fk_stand);
 
-                    } else if ($action == trim($langs->transnoentities('VelomaUnTagCommand'))) {
-                        $ref = isset($data[1]) ? trim($data[1]) : '';
-                        $stand = new Stand($this->db);
+                } else if ($action == trim($langs->transnoentities('VelomaUnTagCommand'))) {
+                    $ref = isset($data[1]) ? trim($data[1]) : '';
+                    $stand = new Stand($this->db);
 
-                        if ($stand->fetch(0, $ref) > 0) {
+                    if ($stand->fetch(0, $ref) > 0) {
+                        if ($stand->active) {
                             $lineid = $stand->fetch_last_lineid($user->id);
 
                             if ($lineid > 0) {
@@ -484,157 +502,160 @@ class Veloma extends CommonObject
                         } else {
                             $response = $langs->transnoentities('VelomaStandNotFound');
                         }
+                    } else {
+                        $response = $langs->transnoentities('VelomaStandNotFound');
+                    }
 
-                        $this->createHistory($user, $action, $text, -1, $stand->id ?: -1);
+                    $this->createHistory($user, $action, $text, -1, $stand->id ?: -1);
 
-                    } else if ($action == trim($langs->transnoentities('VelomaListCommand'))) {
-                        $ref = isset($data[1]) ? trim($data[1]) : '';
+                } else if ($action == trim($langs->transnoentities('VelomaListCommand'))) {
+                    $ref = isset($data[1]) ? trim($data[1]) : '';
 
-                        $stand = new Stand($this->db);
+                    $stand = new Stand($this->db);
 
-                        if ($stand->fetch(0, $ref) > 0) {
-                            // List free bikes
-                            $bike = new Bike($this->db);
-                            $bikes = $bike->liste_stand_array($stand->id);
-                            $numBikes = array();
-                            if (is_array($bikes) && count($bikes)) {
-                                foreach ($bikes as $bike) {
-                                    if ($bike->active) {
-                                        $numBikes[] =  $bike->id;
-                                    }
-                                }
-                            }
-
-                            if (count($numBikes)) {
-                                $response = $langs->transnoentities('VelomaBikesInStand', implode(' ', $numBikes));
-                            } else {
-                                $response = $langs->transnoentities('VelomaNoBikesInStand');
-                            }
-                        } else {
-                            $response = $langs->transnoentities('VelomaStandNotFound');
-                        }
-
-                        $this->createHistory($user, $action, $text, -1, $stand->id ?: -1);
-
-                    } else if ($action == trim($langs->transnoentities('VelomaAddCommand'))) {
-                        $firstName = isset($data[1]) ? trim($data[1]) : '';
-                        $lastName = isset($data[2]) ? trim($data[2]) : '';
-                        $email = isset($data[3]) ? trim($data[3]) : '';
-                        $user_mobile = isset($data[4]) ? trim($data[4]) : '';
-                        $credit = isset($data[5]) ? price2num(trim($data[5])) : 0;
-
-                        $test = new User($this->db);
-                        if ($user->admin) {
-                            $result = $test->fetch(0, '', '', -1, $email);
-                            if ($result > 0 && $test->id != $user->id) {
-                                $response = $langs->transnoentities('VelomaUserAlreadyExist');
-                            } else {
-                                if (!empty($email)) {
-                                    $user->email = $email;
-                                }
-                                if (!empty($user_mobile)) {
-                                    $login = $this->getLogin($user_mobile);
-                                    $user->user_mobile = $user_mobile;
-                                    $user->login = $login;
-                                }
-                                if (!empty($lastName)) {
-                                    $user->lastname = $lastName;
-                                }
-                                if (!empty($firstName)) {
-                                    $user->firstname = $firstName;
-                                }
-                                if (!empty($conf->global->VELOMA_USE_CREDIT)) {
-                                    if (!empty($credit)) {
-                                        $user->array_options['options_veloma_credit'] = floatval($credit);
-                                    } else {
-                                        $user->array_options['options_veloma_credit'] = floatval($conf->global->VELOMA_INITIAL_CREDIT);
-                                    }
-                                }
-                                $user->array_options['options_veloma_limit'] = $conf->global->VELOMA_INITIAL_LIMIT;
-
-                                if ($user->create($user) > 0) {
-                                    $response = $langs->transnoentities('VelomaUserAdded');
-                                } else {
-                                    $response = $langs->transnoentities('VelomaErrorInCreatingUser');
-                                }
-                            }
-                        } else {
-                            $response = $langs->transnoentities('VelomaBikeCommandNotAllowed');
-                        }
-
-                        $this->createHistory($user, $action, $text, -1, -1);
-
-                    } else if ($action == trim($langs->transnoentities('VelomaRevertCommand'))) {
-                        $ref = isset($data[1]) ? trim($data[1]) : '';
+                    if ($stand->fetch(0, $ref) > 0) {
+                        // List free bikes
                         $bike = new Bike($this->db);
-                        $current_fk_stand = -1;
-                        if ($bike->fetch(0, $ref) > 0) {
-                            if ($bike->active) {
-                                $current_fk_stand = $bike->fk_stand;
-                                if ($bike->fk_user > 0) {
-                                    if ($user->id == $bike->fk_user) {
-                                        $fk_stand = $history->getLastStandForBike($bike->id);
-                                        $bike->fk_user = -1;
-                                        $bike->fk_stand = $fk_stand;
-                                        $bike->update($user);
-                                        $response = $langs->transnoentities('VelomaBikeRentCanceled');
-                                    } else {
-                                        $response = $langs->transnoentities('VelomaBikeIsNotRentedByYou');
-                                    }
+                        $bikes = $bike->liste_stand_array($stand->id);
+                        $numBikes = array();
+                        if (is_array($bikes) && count($bikes)) {
+                            foreach ($bikes as $bike) {
+                                if ($bike->active) {
+                                    $numBikes[] =  $bike->id;
+                                }
+                            }
+                        }
+
+                        if (count($numBikes)) {
+                            $response = $langs->transnoentities('VelomaBikesInStand', implode(' ', $numBikes));
+                        } else {
+                            $response = $langs->transnoentities('VelomaNoBikesInStand');
+                        }
+                    } else {
+                        $response = $langs->transnoentities('VelomaStandNotFound');
+                    }
+
+                    $this->createHistory($user, $action, $text, -1, $stand->id ?: -1);
+
+                } else if ($action == trim($langs->transnoentities('VelomaAddCommand'))) {
+                    $firstName = isset($data[1]) ? trim($data[1]) : '';
+                    $lastName = isset($data[2]) ? trim($data[2]) : '';
+                    $email = isset($data[3]) ? trim($data[3]) : '';
+                    $user_mobile = isset($data[4]) ? trim($data[4]) : '';
+                    $credit = isset($data[5]) ? price2num(trim($data[5])) : 0;
+
+                    $test = new User($this->db);
+                    if ($user->admin) {
+                        $result = $test->fetch(0, '', '', -1, $email);
+                        if ($result > 0 && $test->id != $user->id) {
+                            $response = $langs->transnoentities('VelomaUserAlreadyExist');
+                        } else {
+                            if (!empty($email)) {
+                                $user->email = $email;
+                            }
+                            if (!empty($user_mobile)) {
+                                $login = $this->getLogin($user_mobile);
+                                $user->user_mobile = $user_mobile;
+                                $user->login = $login;
+                            }
+                            if (!empty($lastName)) {
+                                $user->lastname = $lastName;
+                            }
+                            if (!empty($firstName)) {
+                                $user->firstname = $firstName;
+                            }
+                            if (!empty($conf->global->VELOMA_USE_CREDIT)) {
+                                if (!empty($credit)) {
+                                    $user->array_options['options_veloma_credit'] = floatval($credit);
                                 } else {
-                                    $response = $langs->transnoentities('VelomaBikeIsNotRented');
+                                    $user->array_options['options_veloma_credit'] = floatval($conf->global->VELOMA_INITIAL_CREDIT);
+                                }
+                            }
+                            $user->array_options['options_veloma_limit'] = $conf->global->VELOMA_INITIAL_LIMIT;
+
+                            if ($user->create($user) > 0) {
+                                $response = $langs->transnoentities('VelomaUserAdded');
+                            } else {
+                                $response = $langs->transnoentities('VelomaErrorInCreatingUser');
+                            }
+                        }
+                    } else {
+                        $response = $langs->transnoentities('VelomaBikeCommandNotAllowed');
+                    }
+
+                    $this->createHistory($user, $action, $text, -1, -1);
+
+                } else if ($action == trim($langs->transnoentities('VelomaRevertCommand'))) {
+                    $ref = isset($data[1]) ? trim($data[1]) : '';
+                    $bike = new Bike($this->db);
+                    $current_fk_stand = -1;
+                    if ($bike->fetch(0, $ref) > 0) {
+                        if ($bike->active) {
+                            $current_fk_stand = $bike->fk_stand;
+                            if ($bike->fk_user > 0) {
+                                if ($user->id == $bike->fk_user) {
+                                    $fk_stand = $history->getLastStandForBike($bike->id);
+                                    $bike->fk_user = -1;
+                                    $bike->fk_stand = $fk_stand;
+                                    $bike->update($user);
+                                    $response = $langs->transnoentities('VelomaBikeRentCanceled');
+                                } else {
+                                    $response = $langs->transnoentities('VelomaBikeIsNotRentedByYou');
                                 }
                             } else {
-                                $response = $langs->transnoentities('VelomaBikeNotFound');
+                                $response = $langs->transnoentities('VelomaBikeIsNotRented');
                             }
                         } else {
                             $response = $langs->transnoentities('VelomaBikeNotFound');
                         }
-
-                        $this->createHistory($user, $action, $text, $bike->id ?: -1, $current_fk_stand);
-
-                    } else if ($action == trim($langs->transnoentities('VelomaLastCommand'))) {
-                        $ref = isset($data[1]) ? trim($data[1]) : '';
-                        $bike = new Bike($this->db);
-                        if ($user->admin) {
-                            if ($bike->fetch(0, $ref) > 0) {
-                                if ($bike->fk_user > 0) {
-                                    $u = new User($this->db);
-                                    if ($u->fetch($bike->fk_user) > 0) {
-                                        $response = $langs->transnoentities('VelomaBikeIsRentedBy', $u->user_mobile);
-                                    } else {
-                                        $response = $langs->transnoentities('VelomaBikeUserNotFound');
-                                    }
-                                } else {
-                                    $fk_user = $history->getLastUserForBike($bike->id);
-                                    $u = new User($this->db);
-                                    if ($u->fetch($fk_user) > 0) {
-                                        $response = $langs->transnoentities('VelomaBikeWasRentedBy', $u->user_mobile);
-                                    } else {
-                                        $response = $langs->transnoentities('VelomaBikeUserNotFound');
-                                    }
-                                }
-                            } else {
-                                $response = $langs->transnoentities('VelomaBikeNotFound');
-                            }
-                        } else {
-                            $response = $langs->transnoentities('VelomaBikeCommandNotAllowed');
-                        }
-
-                        $this->createHistory($user, $action, $text, $bike->id ?: -1, $bike->fk_stand ?: -1);
                     } else {
-                        $response = $langs->transnoentities('VelomaUnknownCommand');
+                        $response = $langs->transnoentities('VelomaBikeNotFound');
                     }
 
+                    $this->createHistory($user, $action, $text, $bike->id ?: -1, $current_fk_stand);
+
+                } else if ($action == trim($langs->transnoentities('VelomaLastCommand'))) {
+                    $ref = isset($data[1]) ? trim($data[1]) : '';
+                    $bike = new Bike($this->db);
+                    if ($user->admin) {
+                        if ($bike->fetch(0, $ref) > 0) {
+                            if ($bike->fk_user > 0) {
+                                $u = new User($this->db);
+                                if ($u->fetch($bike->fk_user) > 0) {
+                                    $response = $langs->transnoentities('VelomaBikeIsRentedBy', $u->user_mobile);
+                                } else {
+                                    $response = $langs->transnoentities('VelomaBikeUserNotFound');
+                                }
+                            } else {
+                                $fk_user = $history->getLastUserForBike($bike->id);
+                                $u = new User($this->db);
+                                if ($u->fetch($fk_user) > 0) {
+                                    $response = $langs->transnoentities('VelomaBikeWasRentedBy', $u->user_mobile);
+                                } else {
+                                    $response = $langs->transnoentities('VelomaBikeUserNotFound');
+                                }
+                            }
+                        } else {
+                            $response = $langs->transnoentities('VelomaBikeNotFound');
+                        }
+                    } else {
+                        $response = $langs->transnoentities('VelomaBikeCommandNotAllowed');
+                    }
+
+                    $this->createHistory($user, $action, $text, $bike->id ?: -1, $bike->fk_stand ?: -1);
                 } else {
-                    $response = $langs->transnoentities('VelomaNotRegistered');
+                    $response = $langs->transnoentities('VelomaUnknownCommand');
                 }
 
-                dol_syslog("Veloma::process get response ".$response);
+            } else {
+                $response = $langs->transnoentities('VelomaNotRegistered');
+            }
 
-                if (!empty($response)) {
-                    $dolipush->send($number, $response);
-                }
+            dol_syslog("Veloma::process get response ".$response);
+
+            if (!empty($response)) {
+                $sms = new VelomaSMS($this->db);
+                $sms->create($number, $response, $user);
             }
         }
 
@@ -685,6 +706,14 @@ class Veloma extends CommonObject
         return 'user'.$number;
     }
 
+    function formatNumber($number, $prefix = '+33')
+    {
+        $number = str_replace('+33', '', $number);
+        if (substr($number, 0, 1) == '0') {
+            $number = substr($number, 1);
+        }
+        return $prefix.$number;
+    }
     /**
      *  Return help
      *

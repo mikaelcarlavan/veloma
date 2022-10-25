@@ -95,7 +95,7 @@ class InterfaceVelomaTriggers extends DolibarrTriggers
 	 */
 	public function runTrigger($action, $object, User $user, Translate $langs, Conf $conf)
 	{
-        if (empty($conf->veloma->enabled) && empty($conf->dolipush->enabled)) return 0;     // Module not active, we do nothing
+        if (empty($conf->veloma->enabled)) return 0;     // Module not active, we do nothing
 
 	    // Put here code you want to execute when a Dolibarr business events occurs.
 		// Data and type of action are stored into $object and $action
@@ -104,7 +104,7 @@ class InterfaceVelomaTriggers extends DolibarrTriggers
 
         switch ($action) {
 
-            case 'DOLIPUSH_CREATE':
+            case 'DOLISMS_RECEIVED':
 
 		        dol_syslog("Trigger '".$this->name."' for action '$action' launched by ".__FILE__.". id=".$object->id);
 
