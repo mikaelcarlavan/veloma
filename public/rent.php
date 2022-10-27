@@ -153,7 +153,7 @@ if ($id > 0) {
                                 $booking->create($user);
 
                                 $site->addMessage($langs->trans('VelomaBikeBooked', $bike->ref, dol_print_date($start, 'dayhour'), dol_print_date($end, 'dayhour')));
-                                $this->createHistory($user, $langs->trans('VelomaRentCommand'), $langs->trans('VelomaRentCommand').' '.$bike->ref, $bike->id ?: -1, $bike->fk_stand);
+                                $veloma->createHistory($user, $langs->trans('VelomaRentCommand'), $langs->trans('VelomaRentCommand').' '.$bike->ref, $bike->id ?: -1, $bike->fk_stand);
                             }
                         } else {
                             $current_fk_stand = $bike->fk_stand;
@@ -163,7 +163,7 @@ if ($id > 0) {
                             $bike->update($user);
 
                             $site->addMessage($langs->trans('VelomaBikeRented', $bike->code));
-                            $this->createHistory($user, $langs->trans('VelomaRentCommand'), $langs->trans('VelomaRentCommand').' '.$bike->ref, $bike->id ?: -1, $current_fk_stand);
+                            $veloma->createHistory($user, $langs->trans('VelomaRentCommand'), $langs->trans('VelomaRentCommand').' '.$bike->ref, $bike->id ?: -1, $current_fk_stand);
                             $url = dol_buildpath('/veloma/public/thanks.php', 1);
                         }
                     }
