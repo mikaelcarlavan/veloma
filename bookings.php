@@ -76,7 +76,7 @@ $search_fk_user = GETPOST('search_fk_user', 'int');
 
 // Security check
 $id = GETPOST('id', 'int');
-$result = restrictedArea($user, 'veloma', $id, '');
+// $result = restrictedArea($user, 'veloma', '', '');
 
 $diroutputmassaction = $conf->veloma->dir_output . '/temp/massgeneration/' . $user->id;
 
@@ -132,7 +132,9 @@ if (empty($reshook)) {
         $booking = new VelomaBooking($db);
 
         if ($booking->fetch($id) > 0) {
-            if (!isset($bikes[$booking->fk_bike])) {
+            $bike = $booking->bike;
+
+            if (!$bike->id) {
                 setEventMessages($langs->trans("VelomaBikeNotFound"), null, 'errors');
             } else {
                 $booking->delete($user);
@@ -140,9 +142,8 @@ if (empty($reshook)) {
 
                 // Send SMS
                 $u = $booking->user;
-                $bike = $booking->bike;
                 if ($u && $bike) {
-                    $response = $langs->trans('VelomaBikeBookCanceledByAdmin', $bike->ref, dol_print_date($booking->dates, 'dayhour'), dol_print_date($booking->datee, 'dayhour'));
+                    $response = $langs->transnoentities('VelomaBikeBookCanceledByAdmin', $bike->ref, dol_print_date($booking->dates, 'dayhour'), dol_print_date($booking->datee, 'dayhour'));
                     $sms = new VelomaSMS($db);
                     $sms->create($u->user_mobile, $response, $user);
                 }
@@ -258,7 +259,7 @@ if ($resql) {
 
     // Confirmation to delete
     if ($action == 'delete') {
-        $formconfirm = $form->formconfirm($_SERVER["PHP_SELF"] . '?id=' . $object->id, $langs->trans('VelomaDeleteBooking'), $langs->trans('VelomaConfirmDeleteBooking'), 'confirm_delete', '', 0, 1);
+        $formconfirm = $form->formconfirm($_SERVER["PHP_SELF"] . '?id=' . $id, $langs->trans('VelomaDeleteBooking'), $langs->trans('VelomaConfirmDeleteBooking'), 'confirm_delete', '', 0, 1);
     }
 
     print $formconfirm;
