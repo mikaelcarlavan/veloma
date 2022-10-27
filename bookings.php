@@ -32,6 +32,7 @@ require_once DOL_DOCUMENT_ROOT . '/core/class/html.formother.class.php';
 dol_include_once("/veloma/class/veloma.class.php");
 dol_include_once("/veloma/class/veloma.history.class.php");
 dol_include_once("/veloma/class/veloma.booking.class.php");
+dol_include_once("/veloma/class/veloma.sms.class.php");
 
 if (!empty($conf->stand->enabled)) {
     dol_include_once("/stand/class/html.form.stand.class.php");
@@ -125,6 +126,30 @@ if (empty($reshook)) {
     if (GETPOST('button_removefilter_x', 'alpha') || GETPOST('button_removefilter.x', 'alpha') || GETPOST('button_removefilter', 'alpha')) // All tests are required to be compatible with all browsers
     {
         $search_user_author_id = '';
+    }
+
+    if ($action == 'confirm_delete') {
+        $booking = new VelomaBooking($db);
+
+        if ($booking->fetch($id) > 0) {
+            if (!isset($bikes[$booking->fk_bike])) {
+                setEventMessages($langs->trans("VelomaBikeNotFound"), null, 'errors');
+            } else {
+                $booking->delete($user);
+                setEventMessages($langs->trans("VelomaBookCanceled"), null, 'mesgs');
+
+                // Send SMS
+                $u = $booking->user;
+                $bike = $booking->bike;
+                if ($u && $bike) {
+                    $response = $langs->trans('VelomaBikeBookCanceledByAdmin', $bike->ref, dol_print_date($booking->dates, 'dayhour'), dol_print_date($booking->datee, 'dayhour'));
+                    $sms = new VelomaSMS($db);
+                    $sms->create($u->user_mobile, $response, $user);
+                }
+            }
+        } else {
+            setEventMessages($langs->trans("VelomaBookNotFound"), null, 'errors');
+        }
     }
 }
 
@@ -222,12 +247,21 @@ if ($resql) {
 
     llxHeader('', $title, $help_url);
 
+
     $param = '';
 
     if (!empty($contextpage) && $contextpage != $_SERVER["PHP_SELF"]) $param .= '&contextpage=' . urlencode($contextpage);
     if ($limit > 0 && $limit != $conf->liste_limit) $param .= '&limit=' . urlencode($limit);
     if ($optioncss != '') $param .= '&optioncss=' . urlencode($optioncss);
 
+    $formconfirm = '';
+
+    // Confirmation to delete
+    if ($action == 'delete') {
+        $formconfirm = $form->formconfirm($_SERVER["PHP_SELF"] . '?id=' . $object->id, $langs->trans('VelomaDeleteBooking'), $langs->trans('VelomaConfirmDeleteBooking'), 'confirm_delete', '', 0, 1);
+    }
+
+    print $formconfirm;
 
     // Lines of title fields
     print '<form method="POST" id="searchFormList" action="' . $_SERVER["PHP_SELF"] . '">';
@@ -411,7 +445,7 @@ if ($resql) {
 
         // Action column
         print '<td class="nowrap" align="center">';
-        print '&nbsp;';
+        print '<a href="'.$_SERVER["PHP_SELF"].'?action=delete&amp;id='.$obj->rowid.'">'.img_delete().'</a>';
         print '</td>';
         if (!$i) $totalarray['nbfield']++;
 
