@@ -21,6 +21,8 @@ $isLoggedIn = $user->id > 0;
                 </button>
             </div>
             <nav class="hidden space-x-10 md:flex">
+                <a href="<?php echo dol_buildpath('/veloma/public/rent.php', 1); ?>" class="text-base font-medium text-gray-500 hover:text-gray-900"><?php echo $langs->trans('VelomaRentABike'); ?></a>
+                <a href="<?php echo dol_buildpath('/veloma/public/rent.php?mode=book', 1); ?>" class="text-base font-medium text-gray-500 hover:text-gray-900"><?php echo $langs->trans('VelomaBookABike'); ?></a>
                 <?php if ($isLoggedIn): ?>
                 <a href="<?php echo dol_buildpath('/veloma/public/rentals.php', 1); ?>" class="text-base font-medium text-gray-500 hover:text-gray-900"><?php echo $langs->trans('VelomaMyRentals'); ?></a>
                 <a href="<?php echo dol_buildpath('/veloma/public/bookings.php', 1); ?>" class="text-base font-medium text-gray-500 hover:text-gray-900"><?php echo $langs->trans('VelomaMyBookings'); ?></a>
@@ -64,6 +66,8 @@ $isLoggedIn = $user->id > 0;
             </div>
             <div class="space-y-6 py-6 px-5">
                 <div class="grid grid-cols-2 gap-y-4 gap-x-8">
+                    <a href="<?php echo dol_buildpath('/veloma/public/rent.php', 1); ?>" class="text-base font-medium text-gray-900 hover:text-gray-700"><?php echo $langs->trans('VelomaRentABike'); ?></a>
+                    <a href="<?php echo dol_buildpath('/veloma/public/rent.php?mode=book', 1); ?>" class="text-base font-medium text-gray-900 hover:text-gray-700"><?php echo $langs->trans('VelomaBookABike'); ?></a>
                     <?php if ($isLoggedIn): ?>
                     <a href="<?php echo dol_buildpath('/veloma/public/rentals.php', 1); ?>" class="text-base font-medium text-gray-900 hover:text-gray-700"><?php echo $langs->trans('VelomaMyRentals'); ?></a>
                     <a href="<?php echo dol_buildpath('/veloma/public/bookings.php', 1); ?>" class="text-base font-medium text-gray-900 hover:text-gray-700"><?php echo $langs->trans('VelomaMyBookings'); ?></a>
