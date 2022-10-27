@@ -19,11 +19,7 @@
  *     	\file       htdocs/veloma/public/index.php
  *		\ingroup    core
  */
-/*
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-*/
+
 define('NOREQUIREMENU', 1);
 define('NOLOGIN', 1);
 
@@ -33,6 +29,8 @@ if (! $res) $res=@include("../../../main.inc.php");    // For "custom" directory
 require_once DOL_DOCUMENT_ROOT.'/core/lib/functions.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/security2.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/CMailFile.class.php';
+require_once DOL_DOCUMENT_ROOT.'/core/lib/date.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
 
 dol_include_once("/veloma/class/site.class.php");
 dol_include_once("/veloma/class/veloma.class.php");
@@ -44,8 +42,8 @@ dol_include_once("/stand/class/stand.class.php");
 $id = GETPOST('id', 'int');
 $action = GETPOST('action', 'alpha');
 $mode = GETPOST('mode', 'alpha');
-$startDate = GETPOST('start-date', 'int');
-$endDate = GETPOST('end-date', 'int');
+$startDate = GETPOST('start-date', 'alpha');
+$endDate = GETPOST('end-date', 'alpha');
 
 $start = dol_now();
 $end = dol_now();
@@ -54,11 +52,19 @@ if ($mode == 'book') {
     $end += 3600;
 
     if (!empty($startDate)) {
-        $start = $startDate;
+        if (is_numeric($startDate)) {
+            $start = $startDate;
+        } else {
+            $start = dol_stringtotime($startDate, 0);
+        }
     }
 
     if (!empty($endDate)) {
-        $end = $endDate;
+        if (is_numeric($endDate)) {
+            $end = $endDate;
+        } else {
+            $end = dol_stringtotime($endDate, 0);
+        }
     }
 }
 
@@ -99,6 +105,7 @@ if (count($bikes)) {
     foreach ($bikes as $bike) {
         if ($bike->fk_stand > 0) {
             if (!isset($bookingsByBike[$bike->id])) {
+                $bike->photo = dol_buildpath('/veloma/public/photo.php?modulepart=bike&id='.$bike->id, 1);
                 $bikesByStand[$bike->fk_stand][] = $bike;
             }
         }
@@ -124,6 +131,7 @@ if ($id > 0) {
                     $limit = !empty($user->array_options['options_veloma_limit']) ? intval($user->array_options['options_veloma_limit']) : 0;
 
                     $rents = $history->getTotalRentsForUser($user->id);
+                    $url = dol_buildpath('/veloma/public/index.php', 1);
 
                     if (!empty($conf->global->VELOMA_USE_CREDIT) && $credit < 0) {
                         $site->addError($langs->transnoentities('VelomaUserCreditIsInsufficient'));
@@ -145,17 +153,21 @@ if ($id > 0) {
                                 $booking->create($user);
 
                                 $site->addMessage($langs->trans('VelomaBikeBooked', $bike->ref, dol_print_date($start, 'dayhour'), dol_print_date($end, 'dayhour')));
+                                $this->createHistory($user, $langs->trans('VelomaRentCommand'), $langs->trans('VelomaRentCommand').' '.$bike->ref, $bike->id ?: -1, $bike->fk_stand);
                             }
                         } else {
+                            $current_fk_stand = $bike->fk_stand;
+
                             $bike->fk_user = $user->id;
                             $bike->fk_stand = -1;
-                            //$bike->update($user);
-                            $site->addMessage($langs->trans('VelomaBikeRented', $bike->code));
-                        }
+                            $bike->update($user);
 
+                            $site->addMessage($langs->trans('VelomaBikeRented', $bike->code));
+                            $this->createHistory($user, $langs->trans('VelomaRentCommand'), $langs->trans('VelomaRentCommand').' '.$bike->ref, $bike->id ?: -1, $current_fk_stand);
+                            $url = dol_buildpath('/veloma/public/thanks.php', 1);
+                        }
                     }
 
-                    $url = dol_buildpath('/veloma/public/index.php', 1);
                     header("Location: ".$url);		// Default behaviour is redirect to index.php page
                     exit;
                 } else {
@@ -241,24 +253,27 @@ if ($id > 0) {
                 <input type="hidden" name="id" value="<?php echo $id; ?>">
                 <input type="hidden" name="mode" value="<?php echo $mode; ?>">
 
-                <div>
-                    <label for="start-date" class="block text-sm font-medium text-gray-700"><?php echo $langs->trans('VelomaBookStartDate'); ?></label>
-                    <div class="mt-1">
-                        <input name="start-date" id="start-date" type="datetime-local" required value="<?php echo dol_print_date($start, '%Y-%m-%d %H:%M'); ?>" class="book-date block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-green-500 focus:outline-none focus:ring-green-500 sm:text-sm">
+                <div class="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                    <div class="sm:col-span-2">
+                        <label for="start-date" class="block text-sm font-medium text-gray-700"><?php echo $langs->trans('VelomaBookStartDate'); ?></label>
+                        <div class="mt-1">
+                            <input name="start-date" id="start-date" type="datetime-local" required value="<?php echo dol_print_date($start, '%Y-%m-%d %H:%M'); ?>" class="book-date block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-green-500 focus:outline-none focus:ring-green-500 sm:text-sm">
+                        </div>
+                    </div>
+                    <div class="sm:col-span-2">
+                        <label for="end-date" class="block text-sm font-medium text-gray-700"><?php echo $langs->trans('VelomaBookEndDate'); ?></label>
+                        <div class="mt-1">
+                            <input name="end-date" id="end-date" type="datetime-local" required value="<?php echo dol_print_date($end, '%Y-%m-%d %H:%M'); ?>" class="book-date block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-green-500 focus:outline-none focus:ring-green-500 sm:text-sm">
+                        </div>
+                    </div>
+                    <div class="sm:col-span-2">
+                        <label for="start-date" class="block text-sm font-medium text-gray-700">&nbsp;</label>
+                        <div class="mt-1">
+                            <button type="submit" class="inline-flex items-center justify-center whitespace-nowrap rounded-md border border-transparent bg-green-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-green-700"><?php echo $langs->trans('VelomaBookSearch'); ?></button>
+                        </div>
                     </div>
                 </div>
-                <div>
-                    <label for="end-date" class="block text-sm font-medium text-gray-700"><?php echo $langs->trans('VelomaBookEndDate'); ?></label>
-                    <div class="mt-1">
-                        <input name="end-date" id="end-date" type="datetime-local" required value="<?php echo dol_print_date($end, '%Y-%m-%d %H:%M'); ?>" class="book-date block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-green-500 focus:outline-none focus:ring-green-500 sm:text-sm">
-                    </div>
-                </div>
-                <div>
-                    <label for="start-date" class="block text-sm font-medium text-gray-700">&nbsp;</label>
-                    <div class="mt-1">
-                        <button type="submit" class="inline-flex items-center justify-center whitespace-nowrap rounded-md border border-transparent bg-green-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-green-700"><?php echo $langs->trans('VelomaBookSearch'); ?></button>
-                    </div>
-                </div>
+
             </form>
         </div>
         <?php endif; ?>
@@ -292,7 +307,7 @@ if ($id > 0) {
 
                 <?php foreach ($bikes as $bike): ?>
                 marker = L.marker([<?php echo $stands[$standId]->latitude; ?>, <?php echo $stands[$standId]->longitude; ?>]);
-                marker.bindPopup("<?php echo addslashes($langs->transnoentities($mode == 'book' ? 'VelomaBookBikeMarker' : 'VelomaRentBikeMarker', $bike->ref, dol_buildpath(sprintf('/veloma/public/rent.php?mode=%s&id=%d&start-date=%s&end-date=%s', $mode, $bike->id, $start, $end), 1))); ?>");
+                marker.bindPopup("<?php echo addslashes($langs->transnoentities($mode == 'book' ? 'VelomaBookBikeMarker' : 'VelomaRentBikeMarker', $bike->photo, $bike->ref, $stands[$standId]->ref, dol_buildpath(sprintf('/veloma/public/rent.php?mode=%s&id=%d&start-date=%s&end-date=%s', $mode, $bike->id, $start, $end), 1))); ?>");
                 markers.addLayer(marker);
                 <?php endforeach; ?>
 

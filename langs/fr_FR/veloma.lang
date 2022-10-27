@@ -69,7 +69,8 @@ VelomaAction = Action
 VelomaParameters = Paramètres
 VelomaDateStart = Date de début
 VelomaDateEnd = Date de fin
-
+VelomaDeleteBooking = Supprimer
+VelomaConfirmDeleteBooking = Êtes vous sûr de vouloir supprimer cette réservation ?
 # Commandes
 VelomaHelpCommand = HELP
 VelomaCreditCommand = CREDIT
@@ -110,6 +111,7 @@ VelomaFreeBikes = Vélos libres : %s.
 VelomaBikeIsNotFree = Le vélo n'est pas libre.
 VelomaBikeRented = Confirmation de location du vélo. Le code antivol est %s.
 VelomaBikeBooked = Confirmation de réservation du vélo %s du %s au %s.
+VelomaBikeBookCanceledByAdmin = Un administrateur a annulé votre réservation du vélo %s du %s au %s.
 VelomaEndBeforeStart = La date de fin ne peut être inférieure à celle du début.
 VelomaBookCanceled = La réservation a été annulée.
 VelomaBookNotFound = La réservation n'a pas été trouvée.
@@ -249,5 +251,5 @@ VelomaReturnBikeDesc = Merci d'indiquer la station où le vélo a été retourn�
 VelomaNotLoggedIn = Merci de vous identifier pour accéder à cette ressource.
 VelomaWelcomeNewUser = Vous avez été correctement enregistré. Voici votre mot de passe de connexion %s.
 VelomaPasswordValidationDesc = Un code de confirmation a été envoyé par SMS. Merci de le renseigner ci-dessous.
-VelomaRentBikeMarker = <div class="text-center">Vélo <b>%s</b><br /><a href="%s" class="flex w-full items-center justify-center rounded-md border border-transparent px-4 py-1 whitespace-nowrap text-sm font-medium hover:bg-gray-200">Louer ce vélo</a></div>
-VelomaBookBikeMarker = <div class="text-center">Vélo <b>%s</b><br /><a href="%s" class="flex w-full items-center justify-center rounded-md border border-transparent px-4 py-1 whitespace-nowrap text-sm font-medium hover:bg-gray-200">Réserver ce vélo</a></div>
+VelomaRentBikeMarker = <div class="text-center"><div style="display: flex; justify-content: center; align-items: center;"><img style="width: 20px; margin-right: 5px;" src="%s" /><span style="display: inline-block; white-space: nowrap; margin-right: 5px;">Vélo <b>%s</b></span>/<span style="margin-left: 5px; display: inline-block; white-space: nowrap;">Station <b>%s</b></span></div><a href="%s" class="flex w-full items-center justify-center rounded-md border border-transparent px-4 py-1 whitespace-nowrap text-sm font-medium hover:bg-gray-200">Louer ce vélo</a></div>
+VelomaBookBikeMarker = <div class="text-center"><div style="display: flex; justify-content: center; align-items: center;"><img style="width: 20px; margin-right: 5px;" src="%s" /><span style="display: inline-block; white-space: nowrap; margin-right: 5px;">Vélo <b>%s</b></span>/<span style="margin-left: 5px; display: inline-block; white-space: nowrap;">Station <b>%s</b></span></div><a href="%s" class="flex w-full items-center justify-center rounded-md border border-transparent px-4 py-1 whitespace-nowrap text-sm font-medium hover:bg-gray-200">Réserver ce vélo</a></div>
