@@ -81,6 +81,9 @@ if ($action == 'confirm') {
             $site->addError($langs->trans('VelomaBikeNotFound'));
         } else {
             $bike = $bikes[$id];
+            $stand = $stands[$standId];
+
+            $current_fk_stand = $bike->fk_stand;
 
             $oldcode = $bike->code;
             $newcode = sprintf("%04d", rand(0, 9999));
@@ -97,6 +100,8 @@ if ($action == 'confirm') {
             }
 
             $site->addMessage($message);
+            $veloma->createHistory($user, $action, $langs->trans('VelomaReturnCommand').' '.$bike->ref.' '.$stand->ref, $bike->id ?: -1, $current_fk_stand);
+
         }
     }
 }
