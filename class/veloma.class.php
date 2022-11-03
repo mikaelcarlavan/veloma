@@ -23,6 +23,7 @@
  */
 require_once DOL_DOCUMENT_ROOT.'/core/class/commonobject.class.php';
 dol_include_once("/veloma/class/veloma.history.class.php");
+dol_include_once("/veloma/class/veloma.booking.class.php");
 dol_include_once("/veloma/class/veloma.sms.class.php");
 dol_include_once("/dolipush/class/dolipush.class.php");
 dol_include_once("/bike/class/bike.class.php");
@@ -134,6 +135,7 @@ class Veloma extends CommonObject
         dol_syslog("Veloma::process received from ".$number." text ".$text);
 
         $history = new VelomaHistory($this->db);
+        $booking = new VelomaBooking($this->db);
 
         $data = explode(' ', $text);
         if (count($data) > 0) {
@@ -158,10 +160,25 @@ class Veloma extends CommonObject
                     // List free bikes
                     $bike = new Bike($this->db);
                     $bikes = $bike->liste_free_array();
+
+                    $start = dol_now();
+                    $end = dol_now();
+
+                    $bookings = $booking->liste_array(0, $start, $end, 'rent');
+
+                    $bookingsByBike = array();
+                    if (count($bookings)) {
+                        foreach ($bookings as $b) {
+                            if ($b->fk_bike > 0) {
+                                $bookingsByBike[$b->fk_bike][] = $b;
+                            }
+                        }
+                    }
+
                     $numBikes = array();
                     if (is_array($bikes) && count($bikes)) {
                         foreach ($bikes as $bike) {
-                            if ($bike->active) {
+                            if ($bike->active && !isset($bookingsByBike[$bike->id])) {
                                 $numBikes[] =  $bike->ref;
                             }
                         }
@@ -184,20 +201,38 @@ class Veloma extends CommonObject
                             if ($bike->fk_user > 0) {
                                 $response = $langs->transnoentities('VelomaBikeIsNotFree');
                             } else {
-                                $credit = !empty($user->array_options['options_veloma_credit']) ? floatval($user->array_options['options_veloma_credit']) : 0;
-                                $limit = !empty($user->array_options['options_veloma_limit']) ? intval($user->array_options['options_veloma_limit']) : 0;
+                                $start = dol_now();
+                                $end = dol_now();
 
-                                $rents = $history->getTotalRentsForUser($user->id);
+                                $bookings = $booking->liste_array(0, $start, $end, 'rent');
 
-                                if (!empty($conf->global->VELOMA_USE_CREDIT) && $credit < 0) {
-                                    $response = $langs->transnoentities('VelomaUserCreditIsInsufficient');
-                                } else if ($rents >= $limit) {
-                                    $response = $langs->transnoentities('VelomaUserTooManyBikesRented');
+                                $bookingsByBike = array();
+                                if (count($bookings)) {
+                                    foreach ($bookings as $b) {
+                                        if ($b->fk_bike > 0) {
+                                            $bookingsByBike[$b->fk_bike][] = $b;
+                                        }
+                                    }
+                                }
+
+                                if (isset($bookingsByBike[$bike->id])) {
+                                    $response = $langs->transnoentities('VelomaBikeIsNotFree');
                                 } else {
-                                    $bike->fk_user = $user->id;
-                                    $bike->fk_stand = -1;
-                                    $bike->update($user);
-                                    $response = $langs->transnoentities('VelomaBikeRented', $bike->code);
+                                    $credit = !empty($user->array_options['options_veloma_credit']) ? floatval($user->array_options['options_veloma_credit']) : 0;
+                                    $limit = !empty($user->array_options['options_veloma_limit']) ? intval($user->array_options['options_veloma_limit']) : 0;
+
+                                    $rents = $history->getTotalRentsForUser($user->id);
+
+                                    if (!empty($conf->global->VELOMA_USE_CREDIT) && $credit < 0) {
+                                        $response = $langs->transnoentities('VelomaUserCreditIsInsufficient');
+                                    } else if ($rents >= $limit) {
+                                        $response = $langs->transnoentities('VelomaUserTooManyBikesRented');
+                                    } else {
+                                        $bike->fk_user = $user->id;
+                                        $bike->fk_stand = -1;
+                                        $bike->update($user);
+                                        $response = $langs->transnoentities('VelomaBikeRented', $bike->code);
+                                    }
                                 }
                             }
                         } else {
