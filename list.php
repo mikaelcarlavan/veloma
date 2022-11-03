@@ -71,6 +71,10 @@ $search_fk_user = GETPOST('search_fk_user', 'int');
 $id = GETPOST('id', 'int');
 $result = restrictedArea($user, 'veloma', $id, '');
 
+if (!$user->admin) {
+    $search_fk_user = $user->id;
+}
+
 $diroutputmassaction = $conf->veloma->dir_output . '/temp/massgeneration/' . $user->id;
 
 // Load variable for pagination

@@ -74,6 +74,11 @@ $search_user_author_id = GETPOST('search_user_author_id', 'int');
 $search_fk_bike = GETPOST('search_fk_bike', 'int');
 $search_fk_user = GETPOST('search_fk_user', 'int');
 
+if (!$user->admin) {
+    $search_fk_user = $user->id;
+}
+
+
 // Security check
 $id = GETPOST('id', 'int');
 // $result = restrictedArea($user, 'veloma', '', '');
