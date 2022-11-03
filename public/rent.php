@@ -307,11 +307,24 @@ if ($id > 0) {
 
                 <?php foreach ($bikes as $bike): ?>
                 marker = L.marker([<?php echo $stands[$standId]->latitude; ?>, <?php echo $stands[$standId]->longitude; ?>]);
-                marker.bindPopup("<?php echo addslashes($langs->transnoentities($mode == 'book' ? 'VelomaBookBikeMarker' : 'VelomaRentBikeMarker', $bike->photo, $bike->ref, $stands[$standId]->ref, dol_buildpath(sprintf('/veloma/public/rent.php?mode=%s&id=%d&start-date=%s&end-date=%s', $mode, $bike->id, $start, $end), 1))); ?>");
+                marker.bindPopup("<?php echo addslashes($langs->transnoentities($mode == 'book' ? 'VelomaBookBikeMarker' : 'VelomaRentBikeMarker', $bike->photo, $bike->ref, $stands[$standId]->ref, dol_buildpath(sprintf('/veloma/public/rent.php?mode=%s&id=%d&start-date=%s&end-date=%s', $mode, $bike->id, $start, $end), 1))); ?>", {minWidth: 150});
                 markers.addLayer(marker);
                 <?php endforeach; ?>
 
                 map.addLayer(markers);
+            <?php endforeach; ?>
+        <?php endif; ?>
+
+        <?php if (count($stands)): ?>
+            <?php foreach ($stands as $standId => $stand): ?>
+                <?php if (!isset($bikesByStand[$standId])): ?>
+                    var markers = L.markerClusterGroup();
+
+                    marker = L.marker([<?php echo $stand->latitude; ?>, <?php echo $stand->longitude; ?>]);
+                    marker.bindPopup("<?php echo addslashes($langs->transnoentities('VelomaStandMarker', dol_buildpath('/veloma/public/photo.php?modulepart=stand&id='.$stand->id, 1), $stand->ref)); ?>", {minWidth: 150});
+                    markers.addLayer(marker);
+                    map.addLayer(markers);
+                <?php endif; ?>
             <?php endforeach; ?>
         <?php endif; ?>
     }
