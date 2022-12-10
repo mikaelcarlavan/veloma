@@ -58,7 +58,7 @@
                     </button>
                 </div>
                 <form id="login" name="login" action="<?php echo dol_buildpath('/veloma/public/index.php', 1); ?>" method="post">
-                    <input type="hidden" name="token" value="<?php echo $_SESSION['newtoken']; ?>" />
+                    <input type="hidden" name="token" value="<?php echo newToken(); ?>" />
                     <input type="hidden" name="action" value="login">
                     <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                         <div class="">
@@ -128,7 +128,7 @@
                     </button>
                 </div>
                 <form id="passrequest" name="passrequest" action="<?php echo dol_buildpath('/veloma/public/index.php', 1); ?>" method="post">
-                    <input type="hidden" name="token" value="<?php echo $_SESSION['newtoken']; ?>" />
+                    <input type="hidden" name="token" value="<?php echo newToken(); ?>" />
                     <input type="hidden" name="action" value="passrequest">
                     <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                         <div class="">
@@ -188,7 +188,7 @@
                     </button>
                 </div>
                 <form id="account" name="account" action="<?php echo dol_buildpath('/veloma/public/index.php', 1); ?>" method="post">
-                    <input type="hidden" name="token" value="<?php echo $_SESSION['newtoken']; ?>" />
+                    <input type="hidden" name="token" value="<?php echo newToken(); ?>" />
                     <input type="hidden" name="action" value="account">
                     <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                         <div class="">
@@ -269,7 +269,7 @@
                     </button>
                 </div>
                 <form id="register" name="register" action="<?php echo dol_buildpath('/veloma/public/index.php', 1); ?>" method="post">
-                    <input type="hidden" name="token" value="<?php echo $_SESSION['newtoken']; ?>" />
+                    <input type="hidden" name="token" value="<?php echo newToken(); ?>" />
                     <input type="hidden" name="action" value="register">
                     <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                         <div class="">
@@ -344,7 +344,7 @@
                     </button>
                 </div>
                 <form id="register" name="register" action="<?php echo dol_buildpath('/veloma/public/index.php', 1); ?>" method="post">
-                    <input type="hidden" name="token" value="<?php echo $_SESSION['newtoken']; ?>" />
+                    <input type="hidden" name="token" value="<?php echo newToken(); ?>" />
                     <input type="hidden" name="action" value="passvalidation">
                     <input type="hidden" name="validation-username" value="<?php echo GETPOST('password-username'); ?>">
 

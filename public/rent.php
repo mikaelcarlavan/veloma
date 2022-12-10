@@ -204,7 +204,7 @@ if ($id > 0) {
         <p class="mx-auto mt-3 text-center max-w-md text-lg text-gray-500 sm:text-xl md:mt-5 md:max-w-3xl"><?php echo $mode == 'book' ? $langs->trans('VelomaConfirmBookDetails') : $langs->trans('VelomaConfirmRentDetails'); ?></p>
         <div class="mt-10 sm:flex sm:justify-center lg:justify-center">
             <form class="w-3/5" id="confirm" name="confirm" action="<?php echo dol_buildpath('/veloma/public/rent.php', 1); ?>" method="post">
-                <input type="hidden" name="token" value="<?php echo $_SESSION['newtoken']; ?>" />
+                <input type="hidden" name="token" value="<?php echo newToken(); ?>" />
                 <input type="hidden" name="action" value="confirm">
                 <input type="hidden" name="id" value="<?php echo $id; ?>">
                 <input type="hidden" name="mode" value="<?php echo $mode; ?>">
@@ -248,7 +248,7 @@ if ($id > 0) {
         <?php if ($mode == 'book'): ?>
         <div class="mt-10 sm:flex sm:justify-center lg:justify-center">
             <form method="post" class="flex space-x-8" name="book" id="book" action="<?php echo dol_buildpath('/veloma/public/rent.php', 1); ?>">
-                <input type="hidden" name="token" value="<?php echo $_SESSION['newtoken']; ?>" />
+                <input type="hidden" name="token" value="<?php echo newToken(); ?>" />
                 <input type="hidden" name="action" value="confirm">
                 <input type="hidden" name="id" value="<?php echo $id; ?>">
                 <input type="hidden" name="mode" value="<?php echo $mode; ?>">

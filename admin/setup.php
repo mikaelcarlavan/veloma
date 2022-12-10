@@ -139,7 +139,7 @@ print "</tr>\n";
 print '<form action="'.$_SERVER["PHP_SELF"].'" method="POST">';
 print '<tr class="oddeven">';
 print '<td>';
-print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
+print '<input type="hidden" name="token" value="'.newToken().'">';
 print '<input type="hidden" name="action" value="update">';
 print '<input type="hidden" name="constname" value="VELOMA_MAP_LATITUDE">';
 print '<input type="hidden" name="constnote" value="">';
@@ -158,7 +158,7 @@ print '</form>';
 print '<form action="'.$_SERVER["PHP_SELF"].'" method="POST">';
 print '<tr class="oddeven">';
 print '<td>';
-print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
+print '<input type="hidden" name="token" value="'.newToken().'">';
 print '<input type="hidden" name="action" value="update">';
 print '<input type="hidden" name="constname" value="VELOMA_MAP_LONGITUDE">';
 print '<input type="hidden" name="constnote" value="">';
@@ -177,7 +177,7 @@ print '</form>';
 print '<form action="'.$_SERVER["PHP_SELF"].'" method="POST">';
 print '<tr class="oddeven">';
 print '<td>';
-print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
+print '<input type="hidden" name="token" value="'.newToken().'">';
 print '<input type="hidden" name="action" value="update">';
 print '<input type="hidden" name="constname" value="VELOMA_MAP_ZOOM">';
 print '<input type="hidden" name="constnote" value="">';
@@ -196,7 +196,7 @@ print '</form>';
 print '<form action="'.$_SERVER["PHP_SELF"].'" method="POST">';
 print '<tr class="oddeven">';
 print '<td>';
-print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
+print '<input type="hidden" name="token" value="'.newToken().'">';
 print '<input type="hidden" name="action" value="update">';
 print '<input type="hidden" name="constname" value="VELOMA_INITIAL_LIMIT">';
 print '<input type="hidden" name="constnote" value="">';
@@ -216,7 +216,7 @@ print '<form action="'.$_SERVER["PHP_SELF"].'" method="POST">';
 print '<tr class="oddeven">';
 // Show constant
 print '<td>';
-print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
+print '<input type="hidden" name="token" value="'.newToken().'">';
 print '<input type="hidden" name="action" value="update">';
 print '<input type="hidden" name="constname" value="VELOMA_USE_CREDIT">';
 print '<input type="hidden" name="constnote" value="">';
@@ -224,9 +224,9 @@ print $langs->trans('DescVELOMA_USE_CREDIT');
 print '</td>';
 print '<td>';
 if (!empty($conf->global->VELOMA_USE_CREDIT)) {
-    print '<a href="'.$_SERVER['PHP_SELF'].'?action=del_VELOMA_USE_CREDIT">'.img_picto($langs->trans("Enabled"), 'switch_on').'</a>';
+    print '<a href="'.$_SERVER['PHP_SELF'].'?action=del_VELOMA_USE_CREDIT&amp;token='.newToken().'">'.img_picto($langs->trans("Enabled"), 'switch_on').'</a>';
 } else {
-    print '<a href="'.$_SERVER['PHP_SELF'].'?action=set_VELOMA_USE_CREDIT">'.img_picto($langs->trans("Disabled"), 'switch_off').'</a>';
+    print '<a href="'.$_SERVER['PHP_SELF'].'?action=set_VELOMA_USE_CREDIT&amp;token='.newToken().'">'.img_picto($langs->trans("Disabled"), 'switch_off').'</a>';
 }
 print '<input type="hidden" name="consttype" value="chaine">';
 print '</td>';
@@ -240,7 +240,7 @@ if (!empty($conf->global->VELOMA_USE_CREDIT)) {
     print '<form action="'.$_SERVER["PHP_SELF"].'" method="POST">';
     print '<tr class="oddeven">';
     print '<td>';
-    print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
+    print '<input type="hidden" name="token" value="'.newToken().'">';
     print '<input type="hidden" name="action" value="update">';
     print '<input type="hidden" name="constname" value="VELOMA_INITIAL_CREDIT">';
     print '<input type="hidden" name="constnote" value="">';
@@ -259,7 +259,7 @@ if (!empty($conf->global->VELOMA_USE_CREDIT)) {
     print '<form action="'.$_SERVER["PHP_SELF"].'" method="POST">';
     print '<tr class="oddeven">';
     print '<td>';
-    print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
+    print '<input type="hidden" name="token" value="'.newToken().'">';
     print '<input type="hidden" name="action" value="update">';
     print '<input type="hidden" name="constname" value="VELOMA_RENT_COST">';
     print '<input type="hidden" name="constnote" value="">';
@@ -278,7 +278,7 @@ if (!empty($conf->global->VELOMA_USE_CREDIT)) {
     print '<form action="'.$_SERVER["PHP_SELF"].'" method="POST">';
     print '<tr class="oddeven">';
     print '<td>';
-    print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
+    print '<input type="hidden" name="token" value="'.newToken().'">';
     print '<input type="hidden" name="action" value="update">';
     print '<input type="hidden" name="constname" value="VELOMA_RENT_DURATION">';
     print '<input type="hidden" name="constnote" value="">';
@@ -297,7 +297,7 @@ if (!empty($conf->global->VELOMA_USE_CREDIT)) {
     print '<form action="'.$_SERVER["PHP_SELF"].'" method="POST">';
     print '<tr class="oddeven">';
     print '<td>';
-    print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
+    print '<input type="hidden" name="token" value="'.newToken().'">';
     print '<input type="hidden" name="action" value="update">';
     print '<input type="hidden" name="constname" value="VELOMA_FREE_DURATION">';
     print '<input type="hidden" name="constnote" value="">';
@@ -318,7 +318,7 @@ print '<form action="'.$_SERVER["PHP_SELF"].'" method="POST">';
 print '<tr class="oddeven">';
 // Show constant
 print '<td>';
-print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
+print '<input type="hidden" name="token" value="'.newToken().'">';
 print '<input type="hidden" name="action" value="update">';
 print '<input type="hidden" name="constname" value="VELOMA_ALLOW_UNREGISTERED_USERS">';
 print '<input type="hidden" name="constnote" value="">';
@@ -326,9 +326,9 @@ print $langs->trans('DescVELOMA_ALLOW_UNREGISTERED_USERS');
 print '</td>';
 print '<td>';
 if (!empty($conf->global->VELOMA_ALLOW_UNREGISTERED_USERS)) {
-    print '<a href="'.$_SERVER['PHP_SELF'].'?action=del_VELOMA_ALLOW_UNREGISTERED_USERS">'.img_picto($langs->trans("Enabled"), 'switch_on').'</a>';
+    print '<a href="'.$_SERVER['PHP_SELF'].'?action=del_VELOMA_ALLOW_UNREGISTERED_USERS&amp;token='.newToken().'">'.img_picto($langs->trans("Enabled"), 'switch_on').'</a>';
 } else {
-    print '<a href="'.$_SERVER['PHP_SELF'].'?action=set_VELOMA_ALLOW_UNREGISTERED_USERS">'.img_picto($langs->trans("Disabled"), 'switch_off').'</a>';
+    print '<a href="'.$_SERVER['PHP_SELF'].'?action=set_VELOMA_ALLOW_UNREGISTERED_USERS&amp;token='.newToken().'">'.img_picto($langs->trans("Disabled"), 'switch_off').'</a>';
 }
 print '<input type="hidden" name="consttype" value="chaine">';
 print '</td>';

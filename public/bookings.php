@@ -175,7 +175,7 @@ $bookings = $booking->liste_array($user->id);
                         </button>
                     </div>
                     <form id="return" name="return" action="<?php echo dol_buildpath('/veloma/public/bookings.php', 1); ?>" method="post">
-                        <input type="hidden" name="token" value="<?php echo $_SESSION['newtoken']; ?>" />
+                        <input type="hidden" name="token" value="<?php echo newToken(); ?>" />
                         <input type="hidden" name="id" value="<?php echo $id; ?>" />
                         <input type="hidden" name="action" value="confirm">
                         <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
